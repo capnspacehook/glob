@@ -23,7 +23,7 @@ func LastIndexAnyRunes(s string, rs []rune) int {
 		} else {
 			sub := s
 			for len(sub) > 0 {
-				j := strings.IndexRune(s, r)
+				j := strings.IndexRune(sub, r)
 				if j == -1 {
 					break
 				}

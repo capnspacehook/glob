@@ -56,119 +56,116 @@ type test struct {
 	delimiters     []rune
 }
 
-func glob(s bool, p, m string, d ...rune) test {
-	return test{p, m, s, d}
+var tests = []test{
+	{should: true, pattern: "* ?at * eyes", match: "my cat has very bright eyes"},
+
+	{should: true, pattern: "", match: ""},
+	{should: false, pattern: "", match: "b"},
+
+	{should: true, pattern: "*ä", match: "åä"},
+	{should: true, pattern: "abc", match: "abc"},
+	{should: true, pattern: "a*c", match: "abc"},
+	{should: true, pattern: "a*c", match: "a12345c"},
+	{should: true, pattern: "a?c", match: "a1c"},
+	{should: true, pattern: "a.b", match: "a.b", delimiters: []rune{'.'}},
+	{should: true, pattern: "a.*", match: "a.b", delimiters: []rune{'.'}},
+	{should: true, pattern: "a.**", match: "a.b.c", delimiters: []rune{'.'}},
+	{should: true, pattern: "a.?.c", match: "a.b.c", delimiters: []rune{'.'}},
+	{should: true, pattern: "a.?.?", match: "a.b.c", delimiters: []rune{'.'}},
+	{should: true, pattern: "?at", match: "cat"},
+	{should: true, pattern: "?at", match: "fat"},
+	{should: true, pattern: "*", match: "abc"},
+	{should: true, pattern: `\*`, match: "*"},
+	{should: true, pattern: "**", match: "a.b.c", delimiters: []rune{'.'}},
+
+	{should: false, pattern: "?at", match: "at"},
+	{should: false, pattern: "?at", match: "fat", delimiters: []rune{'f'}},
+	{should: false, pattern: "a.*", match: "a.b.c", delimiters: []rune{'.'}},
+	{should: false, pattern: "a.?.c", match: "a.bb.c", delimiters: []rune{'.'}},
+	{should: false, pattern: "*", match: "a.b.c", delimiters: []rune{'.'}},
+
+	{should: true, pattern: "*test", match: "this is a test"},
+	{should: true, pattern: "this*", match: "this is a test"},
+	{should: true, pattern: "*is *", match: "this is a test"},
+	{should: true, pattern: "*is*a*", match: "this is a test"},
+	{should: true, pattern: "**test**", match: "this is a test"},
+	{should: true, pattern: "**is**a***test*", match: "this is a test"},
+
+	{should: false, pattern: "*is", match: "this is a test"},
+	{should: false, pattern: "*no*", match: "this is a test"},
+	{should: true, pattern: "[!a]*", match: "this is a test3"},
+
+	{should: true, pattern: "*abc", match: "abcabc"},
+	{should: true, pattern: "**abc", match: "abcabc"},
+	{should: true, pattern: "???", match: "abc"},
+	{should: true, pattern: "?*?", match: "abc"},
+	{should: true, pattern: "?*?", match: "ac"},
+	{should: false, pattern: "sta", match: "stagnation"},
+	{should: true, pattern: "sta*", match: "stagnation"},
+	{should: false, pattern: "sta?", match: "stagnation"},
+	{should: false, pattern: "sta?n", match: "stagnation"},
+
+	{should: true, pattern: "{abc,def}ghi", match: "defghi"},
+	{should: true, pattern: "{abc,abcd}a", match: "abcda"},
+	{should: true, pattern: "{a,ab}{bc,f}", match: "abc"},
+	{should: true, pattern: "{*,**}{a,b}", match: "ab"},
+	{should: false, pattern: "{*,**}{a,b}", match: "ac"},
+
+	{should: true, pattern: "/{rate,[a-z][a-z][a-z]}*", match: "/rate"},
+	{should: true, pattern: "/{rate,[0-9][0-9][0-9]}*", match: "/rate"},
+	{should: true, pattern: "/{rate,[a-z][a-z][a-z]}*", match: "/usd"},
+
+	{should: true, pattern: "{*.google.*,*.yandex.*}", match: "www.google.com", delimiters: []rune{'.'}},
+	{should: true, pattern: "{*.google.*,*.yandex.*}", match: "www.yandex.com", delimiters: []rune{'.'}},
+	{should: false, pattern: "{*.google.*,*.yandex.*}", match: "yandex.com", delimiters: []rune{'.'}},
+	{should: false, pattern: "{*.google.*,*.yandex.*}", match: "google.com", delimiters: []rune{'.'}},
+
+	{should: true, pattern: "{*.google.*,yandex.*}", match: "www.google.com", delimiters: []rune{'.'}},
+	{should: true, pattern: "{*.google.*,yandex.*}", match: "yandex.com", delimiters: []rune{'.'}},
+	{should: false, pattern: "{*.google.*,yandex.*}", match: "www.yandex.com", delimiters: []rune{'.'}},
+	{should: false, pattern: "{*.google.*,yandex.*}", match: "google.com", delimiters: []rune{'.'}},
+
+	{should: true, pattern: "*//{,*.}example.com", match: "https://www.example.com"},
+	{should: true, pattern: "*//{,*.}example.com", match: "http://example.com"},
+	{should: false, pattern: "*//{,*.}example.com", match: "http://example.com.net"},
+
+	{should: true, pattern: pattern_all, match: fixture_all_match},
+	{should: false, pattern: pattern_all, match: fixture_all_mismatch},
+
+	{should: true, pattern: pattern_plain, match: fixture_plain_match},
+	{should: false, pattern: pattern_plain, match: fixture_plain_mismatch},
+
+	{should: true, pattern: pattern_multiple, match: fixture_multiple_match},
+	{should: false, pattern: pattern_multiple, match: fixture_multiple_mismatch},
+
+	{should: true, pattern: pattern_alternatives, match: fixture_alternatives_match},
+	{should: false, pattern: pattern_alternatives, match: fixture_alternatives_mismatch},
+
+	{should: true, pattern: pattern_alternatives_suffix, match: fixture_alternatives_suffix_first_match},
+	{should: false, pattern: pattern_alternatives_suffix, match: fixture_alternatives_suffix_first_mismatch},
+	{should: true, pattern: pattern_alternatives_suffix, match: fixture_alternatives_suffix_second},
+
+	{should: true, pattern: pattern_alternatives_combine_hard, match: fixture_alternatives_combine_hard},
+
+	{should: true, pattern: pattern_alternatives_combine_lite, match: fixture_alternatives_combine_lite},
+
+	{should: true, pattern: pattern_prefix, match: fixture_prefix_suffix_match},
+	{should: false, pattern: pattern_prefix, match: fixture_prefix_suffix_mismatch},
+
+	{should: true, pattern: pattern_suffix, match: fixture_prefix_suffix_match},
+	{should: false, pattern: pattern_suffix, match: fixture_prefix_suffix_mismatch},
+
+	{should: true, pattern: pattern_prefix_suffix, match: fixture_prefix_suffix_match},
+	{should: false, pattern: pattern_prefix_suffix, match: fixture_prefix_suffix_mismatch},
 }
 
 func TestGlob(t *testing.T) {
-	for _, test := range []test{
-		glob(true, "* ?at * eyes", "my cat has very bright eyes"),
-
-		glob(true, "", ""),
-		glob(false, "", "b"),
-
-		glob(true, "*ä", "åä"),
-		glob(true, "abc", "abc"),
-		glob(true, "a*c", "abc"),
-		glob(true, "a*c", "a12345c"),
-		glob(true, "a?c", "a1c"),
-		glob(true, "a.b", "a.b", '.'),
-		glob(true, "a.*", "a.b", '.'),
-		glob(true, "a.**", "a.b.c", '.'),
-		glob(true, "a.?.c", "a.b.c", '.'),
-		glob(true, "a.?.?", "a.b.c", '.'),
-		glob(true, "?at", "cat"),
-		glob(true, "?at", "fat"),
-		glob(true, "*", "abc"),
-		glob(true, `\*`, "*"),
-		glob(true, "**", "a.b.c", '.'),
-
-		glob(false, "?at", "at"),
-		glob(false, "?at", "fat", 'f'),
-		glob(false, "a.*", "a.b.c", '.'),
-		glob(false, "a.?.c", "a.bb.c", '.'),
-		glob(false, "*", "a.b.c", '.'),
-
-		glob(true, "*test", "this is a test"),
-		glob(true, "this*", "this is a test"),
-		glob(true, "*is *", "this is a test"),
-		glob(true, "*is*a*", "this is a test"),
-		glob(true, "**test**", "this is a test"),
-		glob(true, "**is**a***test*", "this is a test"),
-
-		glob(false, "*is", "this is a test"),
-		glob(false, "*no*", "this is a test"),
-		glob(true, "[!a]*", "this is a test3"),
-
-		glob(true, "*abc", "abcabc"),
-		glob(true, "**abc", "abcabc"),
-		glob(true, "???", "abc"),
-		glob(true, "?*?", "abc"),
-		glob(true, "?*?", "ac"),
-		glob(false, "sta", "stagnation"),
-		glob(true, "sta*", "stagnation"),
-		glob(false, "sta?", "stagnation"),
-		glob(false, "sta?n", "stagnation"),
-
-		glob(true, "{abc,def}ghi", "defghi"),
-		glob(true, "{abc,abcd}a", "abcda"),
-		glob(true, "{a,ab}{bc,f}", "abc"),
-		glob(true, "{*,**}{a,b}", "ab"),
-		glob(false, "{*,**}{a,b}", "ac"),
-
-		glob(true, "/{rate,[a-z][a-z][a-z]}*", "/rate"),
-		glob(true, "/{rate,[0-9][0-9][0-9]}*", "/rate"),
-		glob(true, "/{rate,[a-z][a-z][a-z]}*", "/usd"),
-
-		glob(true, "{*.google.*,*.yandex.*}", "www.google.com", '.'),
-		glob(true, "{*.google.*,*.yandex.*}", "www.yandex.com", '.'),
-		glob(false, "{*.google.*,*.yandex.*}", "yandex.com", '.'),
-		glob(false, "{*.google.*,*.yandex.*}", "google.com", '.'),
-
-		glob(true, "{*.google.*,yandex.*}", "www.google.com", '.'),
-		glob(true, "{*.google.*,yandex.*}", "yandex.com", '.'),
-		glob(false, "{*.google.*,yandex.*}", "www.yandex.com", '.'),
-		glob(false, "{*.google.*,yandex.*}", "google.com", '.'),
-
-		glob(true, "*//{,*.}example.com", "https://www.example.com"),
-		glob(true, "*//{,*.}example.com", "http://example.com"),
-		glob(false, "*//{,*.}example.com", "http://example.com.net"),
-
-		glob(true, pattern_all, fixture_all_match),
-		glob(false, pattern_all, fixture_all_mismatch),
-
-		glob(true, pattern_plain, fixture_plain_match),
-		glob(false, pattern_plain, fixture_plain_mismatch),
-
-		glob(true, pattern_multiple, fixture_multiple_match),
-		glob(false, pattern_multiple, fixture_multiple_mismatch),
-
-		glob(true, pattern_alternatives, fixture_alternatives_match),
-		glob(false, pattern_alternatives, fixture_alternatives_mismatch),
-
-		glob(true, pattern_alternatives_suffix, fixture_alternatives_suffix_first_match),
-		glob(false, pattern_alternatives_suffix, fixture_alternatives_suffix_first_mismatch),
-		glob(true, pattern_alternatives_suffix, fixture_alternatives_suffix_second),
-
-		glob(true, pattern_alternatives_combine_hard, fixture_alternatives_combine_hard),
-
-		glob(true, pattern_alternatives_combine_lite, fixture_alternatives_combine_lite),
-
-		glob(true, pattern_prefix, fixture_prefix_suffix_match),
-		glob(false, pattern_prefix, fixture_prefix_suffix_mismatch),
-
-		glob(true, pattern_suffix, fixture_prefix_suffix_match),
-		glob(false, pattern_suffix, fixture_prefix_suffix_mismatch),
-
-		glob(true, pattern_prefix_suffix, fixture_prefix_suffix_match),
-		glob(false, pattern_prefix_suffix, fixture_prefix_suffix_mismatch),
-	} {
+	for _, test := range tests {
 		t.Run("", func(t *testing.T) {
 			g := MustCompile(test.pattern, test.delimiters...)
 			result := g.Match(test.match)
 			if result != test.should {
-				t.Errorf(
-					"pattern %q matching %q should be %v but got %v\n%s",
+				t.Errorf("pattern %q matching %q should be %v but got %v\n%s",
 					test.pattern, test.match, test.should, result, g,
 				)
 			}
@@ -212,6 +209,7 @@ func BenchmarkParseGlob(b *testing.B) {
 		Compile(pattern_all)
 	}
 }
+
 func BenchmarkParseRegexp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		regexp.MustCompile(regexp_all)
@@ -225,6 +223,7 @@ func BenchmarkAllGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_all_match)
 	}
 }
+
 func BenchmarkAllGlobMatchParallel(b *testing.B) {
 	m, _ := Compile(pattern_all)
 
@@ -243,6 +242,7 @@ func BenchmarkAllRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkAllGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_all)
 
@@ -250,6 +250,7 @@ func BenchmarkAllGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_all_mismatch)
 	}
 }
+
 func BenchmarkAllGlobMismatchParallel(b *testing.B) {
 	m, _ := Compile(pattern_all)
 
@@ -259,6 +260,7 @@ func BenchmarkAllGlobMismatchParallel(b *testing.B) {
 		}
 	})
 }
+
 func BenchmarkAllRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_all)
 	f := []byte(fixture_all_mismatch)
@@ -275,6 +277,7 @@ func BenchmarkMultipleGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_multiple_match)
 	}
 }
+
 func BenchmarkMultipleRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_multiple)
 	f := []byte(fixture_multiple_match)
@@ -283,6 +286,7 @@ func BenchmarkMultipleRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkMultipleGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_multiple)
 
@@ -290,6 +294,7 @@ func BenchmarkMultipleGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_multiple_mismatch)
 	}
 }
+
 func BenchmarkMultipleRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_multiple)
 	f := []byte(fixture_multiple_mismatch)
@@ -306,6 +311,7 @@ func BenchmarkAlternativesGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_match)
 	}
 }
+
 func BenchmarkAlternativesGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives)
 
@@ -313,6 +319,7 @@ func BenchmarkAlternativesGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_mismatch)
 	}
 }
+
 func BenchmarkAlternativesRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives)
 	f := []byte(fixture_alternatives_match)
@@ -321,6 +328,7 @@ func BenchmarkAlternativesRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkAlternativesRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives)
 	f := []byte(fixture_alternatives_mismatch)
@@ -337,6 +345,7 @@ func BenchmarkAlternativesSuffixFirstGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_suffix_first_match)
 	}
 }
+
 func BenchmarkAlternativesSuffixFirstGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_suffix)
 
@@ -344,6 +353,7 @@ func BenchmarkAlternativesSuffixFirstGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_suffix_first_mismatch)
 	}
 }
+
 func BenchmarkAlternativesSuffixSecondGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_suffix)
 
@@ -351,6 +361,7 @@ func BenchmarkAlternativesSuffixSecondGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_suffix_second)
 	}
 }
+
 func BenchmarkAlternativesCombineLiteGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_combine_lite)
 
@@ -358,6 +369,7 @@ func BenchmarkAlternativesCombineLiteGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_combine_lite)
 	}
 }
+
 func BenchmarkAlternativesCombineHardGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_combine_hard)
 
@@ -365,6 +377,7 @@ func BenchmarkAlternativesCombineHardGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_alternatives_combine_hard)
 	}
 }
+
 func BenchmarkAlternativesSuffixFirstRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_suffix)
 	f := []byte(fixture_alternatives_suffix_first_match)
@@ -373,6 +386,7 @@ func BenchmarkAlternativesSuffixFirstRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkAlternativesSuffixFirstRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_suffix)
 	f := []byte(fixture_alternatives_suffix_first_mismatch)
@@ -381,6 +395,7 @@ func BenchmarkAlternativesSuffixFirstRegexpMismatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkAlternativesSuffixSecondRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_suffix)
 	f := []byte(fixture_alternatives_suffix_second)
@@ -389,6 +404,7 @@ func BenchmarkAlternativesSuffixSecondRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkAlternativesCombineLiteRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_combine_lite)
 	f := []byte(fixture_alternatives_combine_lite)
@@ -397,6 +413,7 @@ func BenchmarkAlternativesCombineLiteRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkAlternativesCombineHardRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_combine_hard)
 	f := []byte(fixture_alternatives_combine_hard)
@@ -413,6 +430,7 @@ func BenchmarkPlainGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_plain_match)
 	}
 }
+
 func BenchmarkPlainRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_plain)
 	f := []byte(fixture_plain_match)
@@ -421,6 +439,7 @@ func BenchmarkPlainRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkPlainGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_plain)
 
@@ -428,6 +447,7 @@ func BenchmarkPlainGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_plain_mismatch)
 	}
 }
+
 func BenchmarkPlainRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_plain)
 	f := []byte(fixture_plain_mismatch)
@@ -444,6 +464,7 @@ func BenchmarkPrefixGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_prefix_suffix_match)
 	}
 }
+
 func BenchmarkPrefixRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix)
 	f := []byte(fixture_prefix_suffix_match)
@@ -452,6 +473,7 @@ func BenchmarkPrefixRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkPrefixGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_prefix)
 
@@ -459,6 +481,7 @@ func BenchmarkPrefixGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_prefix_suffix_mismatch)
 	}
 }
+
 func BenchmarkPrefixRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix)
 	f := []byte(fixture_prefix_suffix_mismatch)
@@ -475,6 +498,7 @@ func BenchmarkSuffixGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_prefix_suffix_match)
 	}
 }
+
 func BenchmarkSuffixRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_suffix)
 	f := []byte(fixture_prefix_suffix_match)
@@ -483,6 +507,7 @@ func BenchmarkSuffixRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkSuffixGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_suffix)
 
@@ -490,6 +515,7 @@ func BenchmarkSuffixGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_prefix_suffix_mismatch)
 	}
 }
+
 func BenchmarkSuffixRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_suffix)
 	f := []byte(fixture_prefix_suffix_mismatch)
@@ -506,6 +532,7 @@ func BenchmarkPrefixSuffixGlobMatch(b *testing.B) {
 		_ = m.Match(fixture_prefix_suffix_match)
 	}
 }
+
 func BenchmarkPrefixSuffixRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix_suffix)
 	f := []byte(fixture_prefix_suffix_match)
@@ -514,6 +541,7 @@ func BenchmarkPrefixSuffixRegexpMatch(b *testing.B) {
 		_ = m.Match(f)
 	}
 }
+
 func BenchmarkPrefixSuffixGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_prefix_suffix)
 
@@ -521,6 +549,7 @@ func BenchmarkPrefixSuffixGlobMismatch(b *testing.B) {
 		_ = m.Match(fixture_prefix_suffix_mismatch)
 	}
 }
+
 func BenchmarkPrefixSuffixRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix_suffix)
 	f := []byte(fixture_prefix_suffix_mismatch)
