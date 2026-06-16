@@ -2,6 +2,7 @@ package match
 
 import (
 	"fmt"
+	"unicode/utf8"
 )
 
 // Row matches if all of its fixed-length sub-matchers match; used to
@@ -25,20 +26,15 @@ func (self Row) matchAll(s string) bool {
 	for _, m := range self.Matchers {
 		length := m.Len()
 
-		var next, i int
-		for next = range s[idx:] {
-			i++
-			if i == length {
-				break
-			}
+		end := idx
+		var runes int
+		for runes < length && end < len(s) {
+			_, width := utf8.DecodeRuneInString(s[end:])
+			end += width
+			runes++
 		}
 
-		if i < length {
-			return false
-		}
-
-		end := idx + next + 1
-		if end > len(s) || !m.Match(s[idx:end]) {
+		if runes < length || !m.Match(s[idx:end]) {
 			return false
 		}
 

@@ -19,6 +19,10 @@ func NewList(list []rune, not bool) List {
 }
 
 func (self List) Match(s string) bool {
+	if s == "" {
+		return false
+	}
+
 	r, w := utf8.DecodeRuneInString(s)
 	if len(s) > w {
 		return false

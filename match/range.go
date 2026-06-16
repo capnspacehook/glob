@@ -21,6 +21,10 @@ func (self Range) Len() int {
 }
 
 func (self Range) Match(s string) bool {
+	if s == "" {
+		return false
+	}
+
 	r, w := utf8.DecodeRuneInString(s)
 	if len(s) > w {
 		return false

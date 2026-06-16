@@ -57,24 +57,26 @@ func (self AnyOf) Index(s string) (int, []int) {
 	return index, segments
 }
 
-func (self AnyOf) Len() (l int) {
-	l = -1
+func (self AnyOf) Len() int {
+	var set bool
+	var l int
 	for _, m := range self.Matchers {
 		ml := m.Len()
-		switch {
-		case l == -1:
-			l = ml
-			continue
-
-		case ml == -1:
+		if ml == -1 {
 			return -1
+		}
 
-		case l != ml:
+		if !set {
+			l = ml
+			set = true
+			continue
+		}
+		if l != ml {
 			return -1
 		}
 	}
 
-	return
+	return l
 }
 
 func (self AnyOf) String() string {

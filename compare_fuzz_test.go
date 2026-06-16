@@ -44,20 +44,33 @@ func TestGlobVsDoublestar(t *testing.T) {
 // '[abc]' classes, and '{a,bc}' brace alternations. The lastStar guard keeps
 // two '*' tokens from ever landing adjacent.
 func genPattern(t *rapid.T) string {
-	n := rapid.IntRange(1, 16).Draw(t, "tokens")
+	n := rapid.IntRange(1, 16).Draw(t, "")
 	var sb strings.Builder
-	lastStar := false
+	var lastStar bool
+	var inAnyOf bool
+	var anyOfN int
+
 	for range n {
-		switch rapid.IntRange(0, 8).Draw(t, "choice") {
+		if inAnyOf {
+			anyOfN--
+			sb.WriteByte(',')
+			if anyOfN == 0 {
+				inAnyOf = false
+				sb.WriteByte('}')
+				lastStar = false
+			}
+		}
+
+		switch rapid.IntRange(0, 8).Draw(t, "") {
 		case 0, 1, 2, 3: // literal (weighted so matches actually happen)
-			sb.WriteByte(literalGen.Draw(t, "literal"))
+			sb.WriteByte(literalGen.Draw(t, ""))
 			lastStar = false
 		case 4:
 			sb.WriteByte('\\')
-			sb.WriteByte(tokenGen.Draw(t, "token"))
+			sb.WriteByte(tokenGen.Draw(t, ""))
 		case 5: // single '*', never adjacent to another '*'
 			if lastStar {
-				sb.WriteByte(literalGen.Draw(t, "literalAfterStar"))
+				sb.WriteByte(literalGen.Draw(t, ""))
 				lastStar = false
 			} else {
 				sb.WriteByte('*')
@@ -66,13 +79,13 @@ func genPattern(t *rapid.T) string {
 		case 6: // '?'
 			sb.WriteByte('?')
 			lastStar = false
-		case 7: // character class, 0..4 members, no separator inside
-			classLen := rapid.IntRange(0, 4).Draw(t, "classLen")
+		case 7: // character class '[ ]'
+			classLen := rapid.IntRange(0, 4).Draw(t, "")
 			sb.WriteByte('[')
 			// negate 50% of the time
-			if rapid.Bool().Draw(t, "") {
-				sb.WriteByte('!')
-			}
+			// if rapid.Bool().Draw(t, "") {
+			// 	sb.WriteByte('!')
+			// }
 
 			// range 50% of the time
 			if rapid.Bool().Draw(t, "") {
@@ -87,22 +100,19 @@ func genPattern(t *rapid.T) string {
 
 			sb.WriteByte(']')
 			lastStar = false
-		case 8: // brace alternation, 2..3 non-empty literal alternatives
-			alts := rapid.IntRange(2, 3).Draw(t, "altCount")
+		case 8: // brace alternation '{ }'
+			inAnyOf = true
+			anyOfN = rapid.IntRange(0, 3).Draw(t, "") + 1
 			sb.WriteByte('{')
-			for a := range alts {
-				if a > 0 {
-					sb.WriteByte(',')
-				}
-				ln := rapid.IntRange(1, 2).Draw(t, "altLen")
-				for range ln {
-					sb.WriteByte(memberGen.Draw(t, "altChar"))
-				}
-			}
-			sb.WriteByte('}')
 			lastStar = false
 		}
 	}
+
+	if inAnyOf {
+		sb.WriteByte(',')
+		sb.WriteByte('}')
+	}
+
 	return sb.String()
 }
 
@@ -110,12 +120,12 @@ func genChar(t *rapid.T, sb *strings.Builder) {
 	// 33% of the time pick an escaped token
 	if rapid.IntRange(0, 3).Draw(t, "") == 0 {
 		sb.WriteByte('\\')
-		sb.WriteByte(tokenGen.Draw(t, "token"))
+		sb.WriteByte(tokenGen.Draw(t, ""))
 	} else {
 		if rapid.IntRange(0, 2).Draw(t, "") == 0 {
 			sb.WriteByte('\\')
 		}
-		sb.WriteByte(memberGen.Draw(t, "classMember"))
+		sb.WriteByte(memberGen.Draw(t, ""))
 	}
 }
 

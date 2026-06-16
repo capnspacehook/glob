@@ -2,7 +2,6 @@ package glob
 
 import (
 	"github.com/gobwas/glob/compiler"
-	"github.com/gobwas/glob/match"
 	"github.com/gobwas/glob/syntax"
 )
 
@@ -47,12 +46,7 @@ func Compile(pattern string, separators ...rune) (Glob, error) {
 		return nil, err
 	}
 
-	// ensure empty target strings are not matched unless the pattern
-	// is simply '*' which should match an empty string
-	if _, ok := matcher.(match.Any); ok {
-		return matcher, nil
-	}
-	return match.NewNonEmpty(matcher), nil
+	return matcher, nil
 }
 
 // MustCompile is the same as Compile, except that if Compile returns error, this will panic
