@@ -27,59 +27,63 @@ func TestParseString(t *testing.T) {
 		tree   *Node
 	}{
 		{
-			//pattern: "abc",
+			// pattern: "abc",
 			tokens: []lexer.Token{
 				{lexer.Text, "abc"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindText, Text{Text: "abc"}),
 			),
 		},
 		{
-			//pattern: "a*c",
+			// pattern: "a*c",
 			tokens: []lexer.Token{
 				{lexer.Text, "a"},
 				{lexer.Any, "*"},
 				{lexer.Text, "c"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindText, Text{Text: "a"}),
 				NewNode(KindAny, nil),
 				NewNode(KindText, Text{Text: "c"}),
 			),
 		},
 		{
-			//pattern: "a**c",
+			// pattern: "a**c",
 			tokens: []lexer.Token{
 				{lexer.Text, "a"},
 				{lexer.Super, "**"},
 				{lexer.Text, "c"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindText, Text{Text: "a"}),
 				NewNode(KindSuper, nil),
 				NewNode(KindText, Text{Text: "c"}),
 			),
 		},
 		{
-			//pattern: "a?c",
+			// pattern: "a?c",
 			tokens: []lexer.Token{
 				{lexer.Text, "a"},
 				{lexer.Single, "?"},
 				{lexer.Text, "c"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindText, Text{Text: "a"}),
 				NewNode(KindSingle, nil),
 				NewNode(KindText, Text{Text: "c"}),
 			),
 		},
 		{
-			//pattern: "[!a-z]",
+			// pattern: "[!a-z]",
 			tokens: []lexer.Token{
 				{lexer.RangeOpen, "["},
 				{lexer.Not, "!"},
@@ -89,24 +93,26 @@ func TestParseString(t *testing.T) {
 				{lexer.RangeClose, "]"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindRange, Range{Lo: 'a', Hi: 'z', Not: true}),
 			),
 		},
 		{
-			//pattern: "[az]",
+			// pattern: "[az]",
 			tokens: []lexer.Token{
 				{lexer.RangeOpen, "["},
 				{lexer.Text, "az"},
 				{lexer.RangeClose, "]"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindList, List{Chars: "az"}),
 			),
 		},
 		{
-			//pattern: "{a,z}",
+			// pattern: "{a,z}",
 			tokens: []lexer.Token{
 				{lexer.TermsOpen, "{"},
 				{lexer.Text, "a"},
@@ -115,19 +121,23 @@ func TestParseString(t *testing.T) {
 				{lexer.TermsClose, "}"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
-				NewNode(KindAnyOf, nil,
-					NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
+				NewNode(
+					KindAnyOf, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindText, Text{Text: "a"}),
 					),
-					NewNode(KindPattern, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindText, Text{Text: "z"}),
 					),
 				),
 			),
 		},
 		{
-			//pattern: "/{z,ab}*",
+			// pattern: "/{z,ab}*",
 			tokens: []lexer.Token{
 				{lexer.Text, "/"},
 				{lexer.TermsOpen, "{"},
@@ -138,13 +148,17 @@ func TestParseString(t *testing.T) {
 				{lexer.Any, "*"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
 				NewNode(KindText, Text{Text: "/"}),
-				NewNode(KindAnyOf, nil,
-					NewNode(KindPattern, nil,
+				NewNode(
+					KindAnyOf, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindText, Text{Text: "z"}),
 					),
-					NewNode(KindPattern, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindText, Text{Text: "ab"}),
 					),
 				),
@@ -152,7 +166,7 @@ func TestParseString(t *testing.T) {
 			),
 		},
 		{
-			//pattern: "{a,{x,y},?,[a-z],[!qwe]}",
+			// pattern: "{a,{x,y},?,[a-z],[!qwe]}",
 			tokens: []lexer.Token{
 				{lexer.TermsOpen, "{"},
 				{lexer.Text, "a"},
@@ -178,28 +192,38 @@ func TestParseString(t *testing.T) {
 				{lexer.TermsClose, "}"},
 				{lexer.EOF, ""},
 			},
-			tree: NewNode(KindPattern, nil,
-				NewNode(KindAnyOf, nil,
-					NewNode(KindPattern, nil,
+			tree: NewNode(
+				KindPattern, nil,
+				NewNode(
+					KindAnyOf, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindText, Text{Text: "a"}),
 					),
-					NewNode(KindPattern, nil,
-						NewNode(KindAnyOf, nil,
-							NewNode(KindPattern, nil,
+					NewNode(
+						KindPattern, nil,
+						NewNode(
+							KindAnyOf, nil,
+							NewNode(
+								KindPattern, nil,
 								NewNode(KindText, Text{Text: "x"}),
 							),
-							NewNode(KindPattern, nil,
+							NewNode(
+								KindPattern, nil,
 								NewNode(KindText, Text{Text: "y"}),
 							),
 						),
 					),
-					NewNode(KindPattern, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindSingle, nil),
 					),
-					NewNode(KindPattern, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindRange, Range{Lo: 'a', Hi: 'z', Not: false}),
 					),
-					NewNode(KindPattern, nil,
+					NewNode(
+						KindPattern, nil,
 						NewNode(KindList, List{Chars: "qwe", Not: true}),
 					),
 				),

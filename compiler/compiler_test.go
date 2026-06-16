@@ -1,11 +1,12 @@
 package compiler
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/gobwas/glob/match"
 	"github.com/gobwas/glob/match/debug"
 	"github.com/gobwas/glob/syntax/ast"
-	"reflect"
-	"testing"
 )
 
 var separators = []rune{'.'}
@@ -18,7 +19,8 @@ func TestCommonChildren(t *testing.T) {
 	}{
 		{
 			nodes: []*ast.Node{
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"z"}),
 					ast.NewNode(ast.KindText, ast.Text{"c"}),
@@ -27,12 +29,14 @@ func TestCommonChildren(t *testing.T) {
 		},
 		{
 			nodes: []*ast.Node{
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"z"}),
 					ast.NewNode(ast.KindText, ast.Text{"c"}),
 				),
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"b"}),
 					ast.NewNode(ast.KindText, ast.Text{"c"}),
@@ -47,13 +51,15 @@ func TestCommonChildren(t *testing.T) {
 		},
 		{
 			nodes: []*ast.Node{
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"b"}),
 					ast.NewNode(ast.KindText, ast.Text{"c"}),
 					ast.NewNode(ast.KindText, ast.Text{"d"}),
 				),
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"b"}),
 					ast.NewNode(ast.KindText, ast.Text{"c"}),
@@ -72,12 +78,14 @@ func TestCommonChildren(t *testing.T) {
 		},
 		{
 			nodes: []*ast.Node{
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"b"}),
 					ast.NewNode(ast.KindText, ast.Text{"c"}),
 				),
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"b"}),
 					ast.NewNode(ast.KindText, ast.Text{"b"}),
@@ -94,15 +102,18 @@ func TestCommonChildren(t *testing.T) {
 		},
 		{
 			nodes: []*ast.Node{
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"d"}),
 				),
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"d"}),
 				),
-				ast.NewNode(ast.KindNothing, nil,
+				ast.NewNode(
+					ast.KindNothing, nil,
 					ast.NewNode(ast.KindText, ast.Text{"a"}),
 					ast.NewNode(ast.KindText, ast.Text{"e"}),
 				),
@@ -320,39 +331,45 @@ func TestCompiler(t *testing.T) {
 		sep    []rune
 	}{
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
 			),
 			result: match.NewText("abc"),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 			),
 			sep:    separators,
 			result: match.NewAny(separators),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 			),
 			result: match.NewSuper(),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindSuper, nil),
 			),
 			result: match.NewSuper(),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindSingle, nil),
 			),
 			sep:    separators,
 			result: match.NewSingle(separators),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindRange, ast.Range{
 					Lo:  'a',
 					Hi:  'z',
@@ -362,7 +379,8 @@ func TestCompiler(t *testing.T) {
 			result: match.NewRange('a', 'z', true),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindList, ast.List{
 					Chars: "abc",
 					Not:   true,
@@ -371,7 +389,8 @@ func TestCompiler(t *testing.T) {
 			result: match.NewList([]rune{'a', 'b', 'c'}, true),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindSingle, nil),
 				ast.NewNode(ast.KindSingle, nil),
@@ -384,7 +403,8 @@ func TestCompiler(t *testing.T) {
 			}},
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindSingle, nil),
 				ast.NewNode(ast.KindSingle, nil),
@@ -393,7 +413,8 @@ func TestCompiler(t *testing.T) {
 			result: match.NewMin(3),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
 				ast.NewNode(ast.KindSingle, nil),
@@ -412,9 +433,11 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindText, ast.Text{"/"}),
-				ast.NewNode(ast.KindAnyOf, nil,
+				ast.NewNode(
+					ast.KindAnyOf, nil,
 					ast.NewNode(ast.KindText, ast.Text{"z"}),
 					ast.NewNode(ast.KindText, ast.Text{"ab"}),
 				),
@@ -432,7 +455,8 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindSuper, nil),
 				ast.NewNode(ast.KindSingle, nil),
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
@@ -453,21 +477,24 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
 			),
 			result: match.NewSuffix("abc"),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
 				ast.NewNode(ast.KindAny, nil),
 			),
 			result: match.NewPrefix("abc"),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindText, ast.Text{"def"}),
@@ -475,7 +502,8 @@ func TestCompiler(t *testing.T) {
 			result: match.NewPrefixSuffix("abc", "def"),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
@@ -486,7 +514,8 @@ func TestCompiler(t *testing.T) {
 			result: match.NewContains("abc", false),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
@@ -502,7 +531,8 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindSuper, nil),
 				ast.NewNode(ast.KindSingle, nil),
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
@@ -516,17 +546,23 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindText, ast.Text{"abc"}),
 			),
 			result: match.NewText("abc"),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
-				ast.NewNode(ast.KindAnyOf, nil,
-					ast.NewNode(ast.KindPattern, nil,
-						ast.NewNode(ast.KindAnyOf, nil,
-							ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
+				ast.NewNode(
+					ast.KindAnyOf, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
+						ast.NewNode(
+							ast.KindAnyOf, nil,
+							ast.NewNode(
+								ast.KindPattern, nil,
 								ast.NewNode(ast.KindText, ast.Text{"abc"}),
 							),
 						),
@@ -536,20 +572,26 @@ func TestCompiler(t *testing.T) {
 			result: match.NewText("abc"),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
-				ast.NewNode(ast.KindAnyOf, nil,
-					ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
+				ast.NewNode(
+					ast.KindAnyOf, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
 						ast.NewNode(ast.KindText, ast.Text{"abc"}),
 						ast.NewNode(ast.KindSingle, nil),
 					),
-					ast.NewNode(ast.KindPattern, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
 						ast.NewNode(ast.KindText, ast.Text{"abc"}),
 						ast.NewNode(ast.KindList, ast.List{Chars: "def"}),
 					),
-					ast.NewNode(ast.KindPattern, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
 						ast.NewNode(ast.KindText, ast.Text{"abc"}),
 					),
-					ast.NewNode(ast.KindPattern, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
 						ast.NewNode(ast.KindText, ast.Text{"abc"}),
 					),
 				),
@@ -565,7 +607,8 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
 				ast.NewNode(ast.KindRange, ast.Range{Lo: 'a', Hi: 'z'}),
 				ast.NewNode(ast.KindRange, ast.Range{Lo: 'a', Hi: 'x', Not: true}),
 				ast.NewNode(ast.KindAny, nil),
@@ -583,14 +626,18 @@ func TestCompiler(t *testing.T) {
 			),
 		},
 		{
-			ast: ast.NewNode(ast.KindPattern, nil,
-				ast.NewNode(ast.KindAnyOf, nil,
-					ast.NewNode(ast.KindPattern, nil,
+			ast: ast.NewNode(
+				ast.KindPattern, nil,
+				ast.NewNode(
+					ast.KindAnyOf, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
 						ast.NewNode(ast.KindText, ast.Text{"abc"}),
 						ast.NewNode(ast.KindList, ast.List{Chars: "abc"}),
 						ast.NewNode(ast.KindText, ast.Text{"ghi"}),
 					),
-					ast.NewNode(ast.KindPattern, nil,
+					ast.NewNode(
+						ast.KindPattern, nil,
 						ast.NewNode(ast.KindText, ast.Text{"abc"}),
 						ast.NewNode(ast.KindList, ast.List{Chars: "def"}),
 						ast.NewNode(ast.KindText, ast.Text{"ghi"}),
@@ -617,7 +664,7 @@ func TestCompiler(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(m, test.result) {
-			t.Errorf("[%d] Compile():\nexp: %#v\nact: %#v\n\ngraphviz:\nexp:\n%s\nact:\n%s\n", id, test.result, m, debug.Graphviz("", test.result.(match.Matcher)), debug.Graphviz("", m.(match.Matcher)))
+			t.Errorf("[%d] Compile():\nexp: %#v\nact: %#v\n\ngraphviz:\nexp:\n%s\nact:\n%s\n", id, test.result, m, debug.Graphviz("", test.result), debug.Graphviz("", m))
 			continue
 		}
 	}
