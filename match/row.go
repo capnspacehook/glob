@@ -64,14 +64,20 @@ func (self Row) Len() (l int) {
 }
 
 func (self Row) Index(s string) (int, []int) {
-	for i := range s {
+	for i := 0; i <= len(s); {
 		if len(s[i:]) < self.RunesLength {
 			break
 		}
 		if self.matchAll(s[i:]) {
 			return i, self.Segments
 		}
+		if i == len(s) {
+			break
+		}
+		_, width := utf8.DecodeRuneInString(s[i:])
+		i += width
 	}
+
 	return -1, nil
 }
 

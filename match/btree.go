@@ -60,7 +60,8 @@ func (self BTree) Match(s string) bool {
 	// by knowledge of length of right and left part
 	offset, limit := self.offsetLimit(inputLen)
 
-	for offset < limit {
+	// offset may equal limit if s is empty
+	for offset <= limit {
 		// search for matching part in substring
 		index, segments := self.Value.Index(s[offset:limit])
 		if index == -1 {
@@ -106,6 +107,11 @@ func (self BTree) Match(s string) bool {
 		offset += index + step
 
 		releaseSegments(segments)
+
+		// avoid an infinite loop if there are no more runes in the string
+		if step == 0 {
+			break
+		}
 	}
 
 	return false

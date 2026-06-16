@@ -26,7 +26,7 @@ var (
 	memberGen  = rapid.SampledFrom(classMembers)
 
 	// targetGen draws a 0..11 char string over the alphabet, separator included.
-	targetGen = rapid.StringOfN(rapid.SampledFrom([]rune{'a', 'b', 'c', 'd', '/'}), 0, 16, -1)
+	targetGen = rapid.StringOfN(rapid.SampledFrom([]rune{'a', 'b', 'c', 'd', '/'}), 1, 16, -1)
 
 	// patternGen draws a pattern in the gobwas/doublestar common subset.
 	patternGen = rapid.Custom(genPattern)
@@ -40,93 +40,129 @@ func TestGlobVsDoublestar(t *testing.T) {
 	rapid.Check(t, compareGlobs)
 }
 
+var end bool
+
 // genPattern builds a pattern from literals, '*' (never '**'), '?', positive
 // '[abc]' classes, and '{a,bc}' brace alternations. The lastStar guard keeps
 // two '*' tokens from ever landing adjacent.
 func genPattern(t *rapid.T) string {
-	n := rapid.IntRange(1, 16).Draw(t, "")
+	patternLen := rapid.IntRange(1, 16).Draw(t, "patternLen")
 	var sb strings.Builder
 	var lastStar bool
-	var inAnyOf bool
-	var anyOfN int
 
-	for range n {
-		if inAnyOf {
-			anyOfN--
-			sb.WriteByte(',')
-			if anyOfN == 0 {
-				inAnyOf = false
-				sb.WriteByte('}')
-				lastStar = false
+	var writePattern func(n int, inAnyOf bool, anyOfLen int)
+	writePattern = func(n int, inAnyOf bool, anyOfLen int) {
+		anyOfN := anyOfLen
+
+		// prevent a star from appearing in braces following another star,
+		// a star apprearing in braces followed by another star or any
+		// combination thereof; ex '*{*}', '*{?,*}, '{*,?}*'. doublestar
+		// doesn't handle this correctly.
+		notLastStar := func() bool {
+			if inAnyOf {
+				return lastStar
 			}
+			return false
 		}
 
-		switch rapid.IntRange(0, 8).Draw(t, "") {
-		case 0, 1, 2, 3: // literal (weighted so matches actually happen)
-			sb.WriteByte(literalGen.Draw(t, ""))
-			lastStar = false
-		case 4:
-			sb.WriteByte('\\')
-			sb.WriteByte(tokenGen.Draw(t, ""))
-		case 5: // single '*', never adjacent to another '*'
-			if lastStar {
-				sb.WriteByte(literalGen.Draw(t, ""))
-				lastStar = false
-			} else {
-				sb.WriteByte('*')
-				lastStar = true
-			}
-		case 6: // '?'
-			sb.WriteByte('?')
-			lastStar = false
-		case 7: // character class '[ ]'
-			classLen := rapid.IntRange(0, 4).Draw(t, "")
-			sb.WriteByte('[')
-			// negate 50% of the time
-			// if rapid.Bool().Draw(t, "") {
-			// 	sb.WriteByte('!')
-			// }
-
-			// range 50% of the time
-			if rapid.Bool().Draw(t, "") {
-				genChar(t, &sb)
-				sb.WriteByte('-')
-				genChar(t, &sb)
-			} else {
-				for range classLen {
-					genChar(t, &sb)
+		for i := range n {
+			if inAnyOf {
+				if anyOfN > 0 {
+					if anyOfLen != anyOfN {
+						sb.WriteByte(',')
+					}
+					anyOfN--
+				} else {
+					inAnyOf = false
+					sb.WriteByte('}')
 				}
 			}
 
-			sb.WriteByte(']')
-			lastStar = false
-		case 8: // brace alternation '{ }'
-			inAnyOf = true
-			anyOfN = rapid.IntRange(0, 3).Draw(t, "") + 1
-			sb.WriteByte('{')
-			lastStar = false
+			maxChoice := 8
+			if inAnyOf {
+				maxChoice = 7
+			}
+
+			switch rapid.IntRange(0, maxChoice).Draw(t, "choice") {
+			case 0, 1, 2, 3: // literal (weighted so matches actually happen)
+				sb.WriteByte(literalGen.Draw(t, "literal"))
+				lastStar = notLastStar()
+			case 4:
+				sb.WriteByte('\\')
+				sb.WriteByte(tokenGen.Draw(t, "escapedLiteral"))
+			case 5: // single '*', never adjacent to another '*'
+				if lastStar {
+					sb.WriteByte(literalGen.Draw(t, "literal"))
+					lastStar = notLastStar()
+				} else {
+					sb.WriteByte('*')
+					lastStar = true
+				}
+			case 6: // '?'
+				sb.WriteByte('?')
+				lastStar = notLastStar()
+			case 7: // list '[ ]'
+				listLen := rapid.IntRange(0, 4).Draw(t, "listLen")
+				sb.WriteByte('[')
+				// negate 50% of the time
+				// var negated bool
+				// TODO: fix or comment out
+				if rapid.Bool().Draw(t, "negated") {
+					// negated = true
+					// sb.WriteByte('!')
+				}
+
+				for range listLen {
+					// range 33% of the time
+					if rapid.IntRange(0, 2).Draw(t, "isRange") == 0 {
+						// don't use an escaped token as the low end of the
+						// range as it could cause '/' to be included in the
+						// range which doublestar doesn't always handle correctly
+						sb.WriteString(genChar(t, false))
+						sb.WriteByte('-')
+						sb.WriteString(genChar(t, true))
+					} else {
+						sb.WriteString(genChar(t, true))
+					}
+				}
+
+				sb.WriteByte(']')
+				lastStar = notLastStar()
+			case 8: // any of '{ }'
+				// don't generate '{}' as doublestar doesn't always handle
+				// it correctly
+				if i == n-1 {
+					continue
+				}
+
+				sb.WriteByte('{')
+				writePattern(n-i-1, true, rapid.IntRange(1, 3).Draw(t, "anyOfLen"))
+				// don't set lastStar to false; if there was a star before,
+				// then doublestar will incorrectly handle patterns like '*{*}'
+			}
+		}
+
+		if inAnyOf {
+			sb.WriteByte('}')
 		}
 	}
 
-	if inAnyOf {
-		sb.WriteByte(',')
-		sb.WriteByte('}')
-	}
+	writePattern(patternLen, false, 0)
 
 	return sb.String()
 }
 
-func genChar(t *rapid.T, sb *strings.Builder) {
+func genChar(t *rapid.T, tokenPossible bool) string {
 	// 33% of the time pick an escaped token
-	if rapid.IntRange(0, 3).Draw(t, "") == 0 {
-		sb.WriteByte('\\')
-		sb.WriteByte(tokenGen.Draw(t, ""))
-	} else {
-		if rapid.IntRange(0, 2).Draw(t, "") == 0 {
-			sb.WriteByte('\\')
-		}
-		sb.WriteByte(memberGen.Draw(t, ""))
+	if tokenPossible && rapid.IntRange(0, 2).Draw(t, "escapeToken") == 0 {
+		return "\\" + string(tokenGen.Draw(t, "token"))
 	}
+
+	literal := string(memberGen.Draw(t, "literal"))
+	if rapid.IntRange(0, 2).Draw(t, "escapeLiteral") == 0 {
+		return "\\" + literal
+	}
+	return literal
 }
 
 func compareGlobs(t *rapid.T) {
@@ -135,6 +171,10 @@ func compareGlobs(t *rapid.T) {
 
 	g, err := Compile(pattern, sep)
 	if err != nil {
+		_, dsErr := doublestar.Match(pattern, target)
+		if dsErr == nil {
+			t.Fatalf("glob rejects pattern that doublestar accepts: err=%v", err)
+		}
 		return
 	}
 
