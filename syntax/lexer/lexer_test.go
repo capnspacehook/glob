@@ -128,6 +128,42 @@ func TestLexGood(t *testing.T) {
 			},
 		},
 		{
+			// Escaped range bounds: the escape means "the following
+			// character literally", so [\b-\a] is the (reversed) range b-a,
+			// not the character list {b, -, a}.
+			pattern: `[\b-\a]`,
+			items: []Token{
+				{RangeOpen, "["},
+				{RangeLo, "b"},
+				{RangeBetween, "-"},
+				{RangeHi, "a"},
+				{RangeClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			// An escaped hi bound, e.g. a special character.
+			pattern: `[a-\]]`,
+			items: []Token{
+				{RangeOpen, "["},
+				{RangeLo, "a"},
+				{RangeBetween, "-"},
+				{RangeHi, "]"},
+				{RangeClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			// An escaped char not followed by '-' is still a character list.
+			pattern: `[\*abc]`,
+			items: []Token{
+				{RangeOpen, "["},
+				{Text, "*abc"},
+				{RangeClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
 			pattern: "{a,b}",
 			items: []Token{
 				{TermsOpen, "{"},

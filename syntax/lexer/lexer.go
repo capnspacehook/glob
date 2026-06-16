@@ -3,8 +3,9 @@ package lexer
 import (
 	"bytes"
 	"fmt"
-	"github.com/gobwas/glob/util/runes"
 	"unicode/utf8"
+
+	"github.com/gobwas/glob/util/runes"
 )
 
 const (
@@ -87,11 +88,15 @@ func (l *lexer) Next() Token {
 }
 
 func (l *lexer) peek() (r rune, w int) {
-	if l.pos == len(l.data) {
+	return l.peekAt(l.pos)
+}
+
+func (l *lexer) peekAt(pos int) (r rune, w int) {
+	if pos >= len(l.data) {
 		return eof, 0
 	}
 
-	r, w = utf8.DecodeRuneInString(l.data[l.pos:])
+	r, w = utf8.DecodeRuneInString(l.data[pos:])
 	if r == utf8.RuneError {
 		l.errorf("could not read rune")
 		r = eof
@@ -215,6 +220,14 @@ func (l *lexer) fetchRange() {
 		}
 
 		if wantHi {
+			// the hi bound may be escaped, ex [a-\]]
+			if r == char_escape {
+				r = l.read()
+				if r == eof {
+					l.errorf("unexpected end of input")
+					return
+				}
+			}
 			l.tokens.push(Token{RangeHi, string(r)})
 			wantClose = true
 			continue
@@ -223,6 +236,30 @@ func (l *lexer) fetchRange() {
 		if !seenNot && r == char_range_not {
 			l.tokens.push(Token{Not, string(r)})
 			seenNot = true
+			continue
+		}
+
+		if r == char_escape {
+			// the lo bound is escaped, e.g. [\b-\a]. The escaped character
+			// is the real lo bound, so look past it for the range separator
+			esc, ew := l.peek()
+			if esc == eof {
+				l.errorf("unexpected end of input")
+				return
+			}
+			if n, w := l.peekAt(l.pos + ew); n == char_range_between {
+				l.seek(ew) // consume the escaped lo character
+				l.seek(w)  // consume the range separator
+				l.tokens.push(Token{RangeLo, string(esc)})
+				l.tokens.push(Token{RangeBetween, string(n)})
+				wantHi = true
+				continue
+			}
+			// not a range; rewind to the escape and let fetchText handle it
+			// as part of a character list
+			l.unread()
+			l.fetchText([]rune{char_range_close})
+			wantClose = true
 			continue
 		}
 
