@@ -2,6 +2,7 @@ package match
 
 type Super struct{}
 
+// Super matches any sequence of any characters; '**'.
 func NewSuper() Super {
 	return Super{}
 }

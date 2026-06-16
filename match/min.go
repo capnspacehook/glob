@@ -5,6 +5,8 @@ import (
 	"unicode/utf8"
 )
 
+// Min matches any string that has at least the given length; used for
+// length lower-bounds in compiled patterns.
 type Min struct {
 	Limit int
 }

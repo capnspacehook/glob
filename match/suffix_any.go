@@ -7,6 +7,8 @@ import (
 	sutil "github.com/gobwas/glob/util/strings"
 )
 
+// Suffix any matches a string with a given suffix that isn't followed
+// by separators; ex '*abc'.
 type SuffixAny struct {
 	Suffix     string
 	Separators []rune

@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+// EveryOf matches if all of its sub-matchers match; used to AND
+// constraints together.
 type EveryOf struct {
 	Matchers Matchers
 }

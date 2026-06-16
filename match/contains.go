@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// Contains matches if the given string is present anywhere, can be
+// negated; ex '*abc*'
 type Contains struct {
 	Needle string
 	Not    bool

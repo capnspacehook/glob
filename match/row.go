@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+// Row matches if all of its fixed-length sub-matchers match; used to
+// optimize a sequence of fixed-length matchers; ex '[ab]?[h-y]'.
 type Row struct {
 	Matchers    Matchers
 	RunesLength int

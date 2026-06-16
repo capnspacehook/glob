@@ -7,7 +7,7 @@ import (
 	"github.com/gobwas/glob/util/runes"
 )
 
-// single represents ?
+// Single matches any single non-separator character; '?'.
 type Single struct {
 	Separators []rune
 }

@@ -6,7 +6,7 @@ import (
 	"unicode/utf8"
 )
 
-// raw represents raw string to match
+// Text matches a literal string; ex 'abc'.
 type Text struct {
 	Str         string
 	RunesLength int

@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// PrefixSuffix matches any string with a given prefix and suffix;
+// ex 'abc*xyz'.
 type PrefixSuffix struct {
 	Prefix, Suffix string
 }

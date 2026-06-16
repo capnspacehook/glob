@@ -1,5 +1,6 @@
 package match
 
+// Nothing matches an empty string
 type Nothing struct{}
 
 func NewNothing() Nothing {

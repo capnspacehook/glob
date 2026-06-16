@@ -6,6 +6,7 @@ import (
 	"github.com/gobwas/glob/util/strings"
 )
 
+// Any matches any sequence of non-separator characters; '*'.
 type Any struct {
 	Separators []rune
 }

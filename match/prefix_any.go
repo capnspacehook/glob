@@ -8,6 +8,8 @@ import (
 	sutil "github.com/gobwas/glob/util/strings"
 )
 
+// Prefix any matches a string with a given prefix that isn't followed
+// by separators; ex 'abc*'.
 type PrefixAny struct {
 	Prefix     string
 	Separators []rune

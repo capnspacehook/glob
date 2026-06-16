@@ -5,6 +5,8 @@ import (
 	"unicode/utf8"
 )
 
+// Min matches any string that has at most the given length; used for
+// length upper-bounds in compiled patterns.
 type Max struct {
 	Limit int
 }

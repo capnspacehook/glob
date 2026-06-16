@@ -5,6 +5,8 @@ import (
 	"unicode/utf8"
 )
 
+// Range matches a single character inside the given range, can be
+// negated; ex '[a-z]' or '[!a-z]'.
 type Range struct {
 	Lo, Hi rune
 	Not    bool

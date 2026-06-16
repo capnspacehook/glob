@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Suffix matches any string with a given suffix; ex '*abc'.
 type Suffix struct {
 	Suffix string
 }

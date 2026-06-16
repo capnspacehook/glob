@@ -7,6 +7,8 @@ import (
 	"github.com/gobwas/glob/util/runes"
 )
 
+// List matches a single character that's in the given set, can be
+// negated; ex '[abc]' or '[!abc]'.
 type List struct {
 	List []rune
 	Not  bool

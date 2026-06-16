@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 )
 
+// Prefix matches any string with a given prefix; ex 'abc*'.
 type Prefix struct {
 	Prefix string
 }

@@ -2,6 +2,7 @@ package match
 
 import "fmt"
 
+// AnyOf matches if any of its sub-matchers match; ex '{a,b,c}'.
 type AnyOf struct {
 	Matchers Matchers
 }
