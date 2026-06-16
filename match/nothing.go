@@ -1,9 +1,5 @@
 package match
 
-import (
-	"fmt"
-)
-
 type Nothing struct{}
 
 func NewNothing() Nothing {
@@ -23,5 +19,5 @@ func (self Nothing) Len() int {
 }
 
 func (self Nothing) String() string {
-	return fmt.Sprintf("<nothing>")
+	return "<nothing>"
 }

@@ -1,9 +1,5 @@
 package match
 
-import (
-	"fmt"
-)
-
 type Super struct{}
 
 func NewSuper() Super {
@@ -29,5 +25,5 @@ func (self Super) Index(s string) (int, []int) {
 }
 
 func (self Super) String() string {
-	return fmt.Sprintf("<super>")
+	return "<super>"
 }

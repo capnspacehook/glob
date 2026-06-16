@@ -2,7 +2,7 @@ package lexer
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"unicode/utf8"
 
 	"github.com/gobwas/glob/util/runes"
@@ -135,8 +135,8 @@ func (l *lexer) unread() {
 	l.hasRune = true
 }
 
-func (l *lexer) errorf(f string, v ...interface{}) {
-	l.err = fmt.Errorf(f, v...)
+func (l *lexer) errorf(f string) {
+	l.err = errors.New(f)
 }
 
 func (l *lexer) inTerms() bool {

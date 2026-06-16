@@ -36,7 +36,7 @@ func TestSuperIndex(t *testing.T) {
 func BenchmarkIndexSuper(b *testing.B) {
 	m := NewSuper()
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, s := m.Index(bench_pattern)
 		releaseSegments(s)
 	}

@@ -50,45 +50,7 @@ func (self BTree) Len() int {
 	return self.LengthRunes
 }
 
-// todo?
 func (self BTree) Index(s string) (index int, segments []int) {
-	//inputLen := len(s)
-	//// try to cut unnecessary parts
-	//// by knowledge of length of right and left part
-	//offset, limit := self.offsetLimit(inputLen)
-	//for offset < limit {
-	//	// search for matching part in substring
-	//	vi, segments := self.Value.Index(s[offset:limit])
-	//	if index == -1 {
-	//		return -1, nil
-	//	}
-	//	if self.Left == nil {
-	//		if index != offset {
-	//			return -1, nil
-	//		}
-	//	} else {
-	//		left := s[:offset+vi]
-	//		i := self.Left.IndexSuffix(left)
-	//		if i == -1 {
-	//			return -1, nil
-	//		}
-	//		index = i
-	//	}
-	//	if self.Right != nil {
-	//		for _, seg := range segments {
-	//			right := s[:offset+vi+seg]
-	//		}
-	//	}
-
-	//	l := s[:offset+index]
-	//	var left bool
-	//	if self.Left != nil {
-	//		left = self.Left.Index(l)
-	//	} else {
-	//		left = l == ""
-	//	}
-	//}
-
 	return -1, nil
 }
 

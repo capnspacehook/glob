@@ -4,7 +4,7 @@ package compiler
 // TODO glue multiple Text nodes (like after QuoteMeta)
 
 import (
-	"fmt"
+	"errors"
 	"reflect"
 
 	"github.com/gobwas/glob/match"
@@ -28,7 +28,7 @@ func optimizeMatcher(matcher match.Matcher) match.Matcher {
 		return m
 
 	case match.List:
-		if m.Not == false && len(m.List) == 1 {
+		if !m.Not && len(m.List) == 1 {
 			return match.NewText(string(m.List))
 		}
 
@@ -90,7 +90,7 @@ func optimizeMatcher(matcher match.Matcher) match.Matcher {
 
 func compileMatchers(matchers []match.Matcher) (match.Matcher, error) {
 	if len(matchers) == 0 {
-		return nil, fmt.Errorf("compile error: need at least one matcher")
+		return nil, errors.New("compile error: need at least one matcher")
 	}
 	if len(matchers) == 1 {
 		return matchers[0], nil
@@ -260,7 +260,7 @@ func minimizeMatchers(matchers []match.Matcher) []match.Matcher {
 	var done match.Matcher
 	var left, right, count int
 
-	for l := 0; l < len(matchers); l++ {
+	for l := range matchers {
 		for r := len(matchers); r > l; r-- {
 			if glued := glueMatchers(matchers[l:r]); glued != nil {
 				var swap bool
@@ -509,7 +509,7 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 		m = match.NewText(t.Text)
 
 	default:
-		return nil, fmt.Errorf("could not compile tree: unknown node type")
+		return nil, errors.New("could not compile tree: unknown node type")
 	}
 
 	return optimizeMatcher(m), nil

@@ -42,7 +42,7 @@ func TestListIndex(t *testing.T) {
 func BenchmarkIndexList(b *testing.B) {
 	m := NewList([]rune("def"), false)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		m.Index(bench_pattern)
 	}
 }

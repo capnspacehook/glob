@@ -42,7 +42,7 @@ func BenchmarkAppendMerge(b *testing.B) {
 	s1 := []int{0, 1, 3, 6, 7}
 	s2 := []int{0, 1, 3}
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		appendMerge(s1, s2)
 	}
 }
@@ -56,12 +56,6 @@ func BenchmarkAppendMergeParallel(b *testing.B) {
 			appendMerge(s1, s2)
 		}
 	})
-}
-
-func BenchmarkReverse(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		reverseSegments([]int{1, 2, 3, 4})
-	}
 }
 
 func getTable() []int {
@@ -78,13 +72,13 @@ var table = getTable()
 const runeToLen = 'q'
 
 func BenchmarkRuneLenFromTable(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = table[runeToLen]
 	}
 }
 
 func BenchmarkRuneLenFromUTF8(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = utf8.RuneLen(runeToLen)
 	}
 }

@@ -2,6 +2,7 @@ package match
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func (self PrefixSuffix) Index(s string) (int, []int) {
 		return -1, nil
 	}
 
-	reverseSegments(segments)
+	slices.Reverse(segments)
 
 	return prefixIdx, segments
 }

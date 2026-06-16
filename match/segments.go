@@ -4,11 +4,6 @@ import (
 	"sync"
 )
 
-type SomePool interface {
-	Get() []int
-	Put([]int)
-}
-
 var segmentsPools [1024]sync.Pool
 
 func toPowerOfTwo(v int) int {

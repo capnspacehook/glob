@@ -60,7 +60,7 @@ var i = 3
 
 func (f *fakeMatcher) Index(s string) (int, []int) {
 	seg := make([]int, 0, i)
-	for x := 0; x < i; x++ {
+	for x := range i {
 		seg = append(seg, x)
 	}
 	return 0, seg

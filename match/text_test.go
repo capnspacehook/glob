@@ -39,7 +39,7 @@ func TestTextIndex(t *testing.T) {
 func BenchmarkIndexText(b *testing.B) {
 	m := NewText("foo")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, s := m.Index(bench_pattern)
 		releaseSegments(s)
 	}

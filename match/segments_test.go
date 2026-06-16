@@ -5,7 +5,9 @@ import (
 	"testing"
 )
 
-func benchPool(i int, b *testing.B) {
+func benchPool(b *testing.B, i int) {
+	b.Helper()
+
 	pool := sync.Pool{New: func() interface{} {
 		return make([]int, 0, i)
 	}}
@@ -18,7 +20,9 @@ func benchPool(i int, b *testing.B) {
 	})
 }
 
-func benchMake(i int, b *testing.B) {
+func benchMake(b *testing.B, i int) {
+	b.Helper()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			_ = make([]int, 0, i)
@@ -27,73 +31,73 @@ func benchMake(i int, b *testing.B) {
 }
 
 func BenchmarkSegmentsPool_1(b *testing.B) {
-	benchPool(1, b)
+	benchPool(b, 1)
 }
 
 func BenchmarkSegmentsPool_2(b *testing.B) {
-	benchPool(2, b)
+	benchPool(b, 2)
 }
 
 func BenchmarkSegmentsPool_4(b *testing.B) {
-	benchPool(4, b)
+	benchPool(b, 4)
 }
 
 func BenchmarkSegmentsPool_8(b *testing.B) {
-	benchPool(8, b)
+	benchPool(b, 8)
 }
 
 func BenchmarkSegmentsPool_16(b *testing.B) {
-	benchPool(16, b)
+	benchPool(b, 16)
 }
 
 func BenchmarkSegmentsPool_32(b *testing.B) {
-	benchPool(32, b)
+	benchPool(b, 32)
 }
 
 func BenchmarkSegmentsPool_64(b *testing.B) {
-	benchPool(64, b)
+	benchPool(b, 64)
 }
 
 func BenchmarkSegmentsPool_128(b *testing.B) {
-	benchPool(128, b)
+	benchPool(b, 128)
 }
 
 func BenchmarkSegmentsPool_256(b *testing.B) {
-	benchPool(256, b)
+	benchPool(b, 256)
 }
 
 func BenchmarkSegmentsMake_1(b *testing.B) {
-	benchMake(1, b)
+	benchMake(b, 1)
 }
 
 func BenchmarkSegmentsMake_2(b *testing.B) {
-	benchMake(2, b)
+	benchMake(b, 2)
 }
 
 func BenchmarkSegmentsMake_4(b *testing.B) {
-	benchMake(4, b)
+	benchMake(b, 4)
 }
 
 func BenchmarkSegmentsMake_8(b *testing.B) {
-	benchMake(8, b)
+	benchMake(b, 8)
 }
 
 func BenchmarkSegmentsMake_16(b *testing.B) {
-	benchMake(16, b)
+	benchMake(b, 16)
 }
 
 func BenchmarkSegmentsMake_32(b *testing.B) {
-	benchMake(32, b)
+	benchMake(b, 32)
 }
 
 func BenchmarkSegmentsMake_64(b *testing.B) {
-	benchMake(64, b)
+	benchMake(b, 64)
 }
 
 func BenchmarkSegmentsMake_128(b *testing.B) {
-	benchMake(128, b)
+	benchMake(b, 128)
 }
 
 func BenchmarkSegmentsMake_256(b *testing.B) {
-	benchMake(256, b)
+	benchMake(b, 256)
 }

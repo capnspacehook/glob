@@ -39,7 +39,7 @@ func TestPrefixIndex(t *testing.T) {
 func BenchmarkIndexPrefix(b *testing.B) {
 	m := NewPrefix("qew")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, s := m.Index(bench_pattern)
 		releaseSegments(s)
 	}

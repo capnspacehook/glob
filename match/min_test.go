@@ -39,7 +39,7 @@ func TestMinIndex(t *testing.T) {
 func BenchmarkIndexMin(b *testing.B) {
 	m := NewMin(10)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, s := m.Index(bench_pattern)
 		releaseSegments(s)
 	}

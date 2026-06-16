@@ -82,6 +82,8 @@ var indexAnyTests = []indexTest{
 // Execute f on each test case.  funcName should be the name of f; it's used
 // in failure reports.
 func runIndexTests(t *testing.T, f func(s, sep []rune) int, funcName string, testCases []indexTest) {
+	t.Helper()
+
 	for _, test := range testCases {
 		actual := f(test.s, test.sep)
 		if actual != test.out {
@@ -90,9 +92,17 @@ func runIndexTests(t *testing.T, f func(s, sep []rune) int, funcName string, tes
 	}
 }
 
-func TestIndex(t *testing.T)     { runIndexTests(t, Index, "Index", indexTests) }
-func TestLastIndex(t *testing.T) { runIndexTests(t, LastIndex, "LastIndex", lastIndexTests) }
-func TestIndexAny(t *testing.T)  { runIndexTests(t, IndexAny, "IndexAny", indexAnyTests) }
+func TestIndex(t *testing.T) {
+	runIndexTests(t, Index, "Index", indexTests)
+}
+
+func TestLastIndex(t *testing.T) {
+	runIndexTests(t, LastIndex, "LastIndex", lastIndexTests)
+}
+
+func TestIndexAny(t *testing.T) {
+	runIndexTests(t, IndexAny, "IndexAny", indexAnyTests)
+}
 
 var equalTests = []equalTest{
 	newEqualTest("a", "a", true),
@@ -114,7 +124,7 @@ func BenchmarkLastIndexRunes(b *testing.B) {
 	r := []rune("abcdef")
 	n := []rune("cd")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		LastIndex(r, n)
 	}
 }
@@ -123,7 +133,7 @@ func BenchmarkLastIndexStrings(b *testing.B) {
 	r := "abcdef"
 	n := "cd"
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		strings.LastIndex(r, n)
 	}
 }
@@ -132,7 +142,7 @@ func BenchmarkIndexAnyRunes(b *testing.B) {
 	s := []rune("...b...")
 	c := []rune("abc")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		IndexAny(s, c)
 	}
 }
@@ -141,7 +151,7 @@ func BenchmarkIndexAnyStrings(b *testing.B) {
 	s := "...b..."
 	c := "abc"
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		strings.IndexAny(s, c)
 	}
 }
@@ -150,7 +160,7 @@ func BenchmarkIndexRuneRunes(b *testing.B) {
 	s := []rune("...b...")
 	r := 'b'
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		IndexRune(s, r)
 	}
 }
@@ -159,7 +169,7 @@ func BenchmarkIndexRuneStrings(b *testing.B) {
 	s := "...b..."
 	r := 'b'
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		strings.IndexRune(s, r)
 	}
 }
@@ -168,7 +178,7 @@ func BenchmarkIndexRunes(b *testing.B) {
 	r := []rune("abcdef")
 	n := []rune("cd")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		Index(r, n)
 	}
 }
@@ -177,7 +187,7 @@ func BenchmarkIndexStrings(b *testing.B) {
 	r := "abcdef"
 	n := "cd"
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		strings.Index(r, n)
 	}
 }
@@ -186,7 +196,7 @@ func BenchmarkEqualRunes(b *testing.B) {
 	x := []rune("abc")
 	y := []rune("abc")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		if Equal(x, y) {
 			continue
 		}
@@ -197,7 +207,7 @@ func BenchmarkEqualStrings(b *testing.B) {
 	x := "abc"
 	y := "abc"
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		if x == y {
 			continue
 		}
@@ -208,7 +218,7 @@ func BenchmarkNotEqualRunes(b *testing.B) {
 	x := []rune("abc")
 	y := []rune("abcd")
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		if Equal(x, y) {
 			continue
 		}
@@ -219,7 +229,7 @@ func BenchmarkNotEqualStrings(b *testing.B) {
 	x := "abc"
 	y := "abcd"
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		if x == y {
 			continue
 		}

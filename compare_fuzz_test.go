@@ -47,7 +47,7 @@ func genPattern(t *rapid.T) string {
 	n := rapid.IntRange(1, 16).Draw(t, "tokens")
 	var sb strings.Builder
 	lastStar := false
-	for k := 0; k < n; k++ {
+	for range n {
 		switch rapid.IntRange(0, 8).Draw(t, "choice") {
 		case 0, 1, 2, 3: // literal (weighted so matches actually happen)
 			sb.WriteByte(literalGen.Draw(t, "literal"))
@@ -80,7 +80,7 @@ func genPattern(t *rapid.T) string {
 				sb.WriteByte('-')
 				genChar(t, &sb)
 			} else {
-				for j := 0; j < classLen; j++ {
+				for range classLen {
 					genChar(t, &sb)
 				}
 			}
@@ -90,12 +90,12 @@ func genPattern(t *rapid.T) string {
 		case 8: // brace alternation, 2..3 non-empty literal alternatives
 			alts := rapid.IntRange(2, 3).Draw(t, "altCount")
 			sb.WriteByte('{')
-			for a := 0; a < alts; a++ {
+			for a := range alts {
 				if a > 0 {
 					sb.WriteByte(',')
 				}
 				ln := rapid.IntRange(1, 2).Draw(t, "altLen")
-				for j := 0; j < ln; j++ {
+				for range ln {
 					sb.WriteByte(memberGen.Draw(t, "altChar"))
 				}
 			}

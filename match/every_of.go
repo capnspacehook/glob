@@ -12,9 +12,8 @@ func NewEveryOf(m ...Matcher) EveryOf {
 	return EveryOf{Matchers(m)}
 }
 
-func (self *EveryOf) Add(m Matcher) error {
+func (self *EveryOf) Add(m Matcher) {
 	self.Matchers = append(self.Matchers, m)
-	return nil
 }
 
 func (self EveryOf) Len() (l int) {

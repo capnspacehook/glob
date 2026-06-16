@@ -3,13 +3,14 @@ package match
 // todo common table of rune's length
 
 import (
-	"fmt"
 	"strings"
 )
 
-const lenOne = 1
-const lenZero = 0
-const lenNo = -1
+const (
+	lenOne  = 1
+	lenZero = 0
+	lenNo   = -1
+)
 
 type Matcher interface {
 	Match(string) bool
@@ -21,12 +22,12 @@ type Matcher interface {
 type Matchers []Matcher
 
 func (m Matchers) String() string {
-	var s []string
+	s := make([]string, 0, len(m))
 	for _, matcher := range m {
-		s = append(s, fmt.Sprint(matcher))
+		s = append(s, matcher.String())
 	}
 
-	return fmt.Sprintf("%s", strings.Join(s, ","))
+	return strings.Join(s, ",")
 }
 
 // appendMerge merges and sorts given already SORTED and UNIQUE segments.
@@ -69,13 +70,4 @@ func appendMerge(target, sub []int) []int {
 	target = append(target[:0], out...)
 
 	return target
-}
-
-func reverseSegments(input []int) {
-	l := len(input)
-	m := l / 2
-
-	for i := 0; i < m; i++ {
-		input[i], input[l-i-1] = input[l-i-1], input[i]
-	}
 }

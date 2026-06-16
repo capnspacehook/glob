@@ -21,9 +21,9 @@ func TestCommonChildren(t *testing.T) {
 			nodes: []*ast.Node{
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"z"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "z"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 				),
 			},
 		},
@@ -31,95 +31,95 @@ func TestCommonChildren(t *testing.T) {
 			nodes: []*ast.Node{
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"z"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "z"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 				),
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"b"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 				),
 			},
 			left: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"a"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
 			},
 			right: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"c"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 			},
 		},
 		{
 			nodes: []*ast.Node{
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"b"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
-					ast.NewNode(ast.KindText, ast.Text{"d"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "d"}),
 				),
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"b"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
-					ast.NewNode(ast.KindText, ast.Text{"d"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "d"}),
 				),
 			},
 			left: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"a"}),
-				ast.NewNode(ast.KindText, ast.Text{"b"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
 			},
 			right: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"c"}),
-				ast.NewNode(ast.KindText, ast.Text{"d"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "d"}),
 			},
 		},
 		{
 			nodes: []*ast.Node{
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"b"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 				),
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"b"}),
-					ast.NewNode(ast.KindText, ast.Text{"b"}),
-					ast.NewNode(ast.KindText, ast.Text{"c"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 				),
 			},
 			left: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"a"}),
-				ast.NewNode(ast.KindText, ast.Text{"b"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "b"}),
 			},
 			right: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"c"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "c"}),
 			},
 		},
 		{
 			nodes: []*ast.Node{
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"d"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "d"}),
 				),
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"d"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "d"}),
 				),
 				ast.NewNode(
 					ast.KindNothing, nil,
-					ast.NewNode(ast.KindText, ast.Text{"a"}),
-					ast.NewNode(ast.KindText, ast.Text{"e"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "e"}),
 				),
 			},
 			left: []*ast.Node{
-				ast.NewNode(ast.KindText, ast.Text{"a"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "a"}),
 			},
 			right: []*ast.Node{},
 		},
@@ -163,7 +163,7 @@ func TestGlueMatchers(t *testing.T) {
 				match.NewAny(separators),
 				match.NewSingle(separators),
 			},
-			match.EveryOf{match.Matchers{
+			match.EveryOf{Matchers: match.Matchers{
 				match.NewMin(1),
 				match.NewContains(string(separators), true),
 			}},
@@ -174,7 +174,7 @@ func TestGlueMatchers(t *testing.T) {
 				match.NewSingle(nil),
 				match.NewSingle(nil),
 			},
-			match.EveryOf{match.Matchers{
+			match.EveryOf{Matchers: match.Matchers{
 				match.NewMin(3),
 				match.NewMax(3),
 			}},
@@ -184,7 +184,7 @@ func TestGlueMatchers(t *testing.T) {
 				match.NewList([]rune{'a'}, true),
 				match.NewAny([]rune{'a'}),
 			},
-			match.EveryOf{match.Matchers{
+			match.EveryOf{Matchers: match.Matchers{
 				match.NewMin(1),
 				match.NewContains("a", true),
 			}},
@@ -333,7 +333,7 @@ func TestCompiler(t *testing.T) {
 		{
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 			),
 			result: match.NewText("abc"),
 		},
@@ -416,7 +416,7 @@ func TestCompiler(t *testing.T) {
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindSingle, nil),
 			),
 			sep: separators,
@@ -435,11 +435,11 @@ func TestCompiler(t *testing.T) {
 		{
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
-				ast.NewNode(ast.KindText, ast.Text{"/"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "/"}),
 				ast.NewNode(
 					ast.KindAnyOf, nil,
-					ast.NewNode(ast.KindText, ast.Text{"z"}),
-					ast.NewNode(ast.KindText, ast.Text{"ab"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "z"}),
+					ast.NewNode(ast.KindText, ast.Text{Text: "ab"}),
 				),
 				ast.NewNode(ast.KindSuper, nil),
 			),
@@ -459,7 +459,7 @@ func TestCompiler(t *testing.T) {
 				ast.KindPattern, nil,
 				ast.NewNode(ast.KindSuper, nil),
 				ast.NewNode(ast.KindSingle, nil),
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindSingle, nil),
 			),
 			sep: separators,
@@ -480,14 +480,14 @@ func TestCompiler(t *testing.T) {
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 			),
 			result: match.NewSuffix("abc"),
 		},
 		{
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindAny, nil),
 			),
 			result: match.NewPrefix("abc"),
@@ -495,9 +495,9 @@ func TestCompiler(t *testing.T) {
 		{
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindAny, nil),
-				ast.NewNode(ast.KindText, ast.Text{"def"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "def"}),
 			),
 			result: match.NewPrefixSuffix("abc", "def"),
 		},
@@ -507,7 +507,7 @@ func TestCompiler(t *testing.T) {
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
 			),
@@ -519,7 +519,7 @@ func TestCompiler(t *testing.T) {
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindAny, nil),
 			),
@@ -535,7 +535,7 @@ func TestCompiler(t *testing.T) {
 				ast.KindPattern, nil,
 				ast.NewNode(ast.KindSuper, nil),
 				ast.NewNode(ast.KindSingle, nil),
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 				ast.NewNode(ast.KindSuper, nil),
 				ast.NewNode(ast.KindSingle, nil),
 			),
@@ -548,7 +548,7 @@ func TestCompiler(t *testing.T) {
 		{
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
-				ast.NewNode(ast.KindText, ast.Text{"abc"}),
+				ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 			),
 			result: match.NewText("abc"),
 		},
@@ -563,7 +563,7 @@ func TestCompiler(t *testing.T) {
 							ast.KindAnyOf, nil,
 							ast.NewNode(
 								ast.KindPattern, nil,
-								ast.NewNode(ast.KindText, ast.Text{"abc"}),
+								ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 							),
 						),
 					),
@@ -578,21 +578,21 @@ func TestCompiler(t *testing.T) {
 					ast.KindAnyOf, nil,
 					ast.NewNode(
 						ast.KindPattern, nil,
-						ast.NewNode(ast.KindText, ast.Text{"abc"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 						ast.NewNode(ast.KindSingle, nil),
 					),
 					ast.NewNode(
 						ast.KindPattern, nil,
-						ast.NewNode(ast.KindText, ast.Text{"abc"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 						ast.NewNode(ast.KindList, ast.List{Chars: "def"}),
 					),
 					ast.NewNode(
 						ast.KindPattern, nil,
-						ast.NewNode(ast.KindText, ast.Text{"abc"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 					),
 					ast.NewNode(
 						ast.KindPattern, nil,
-						ast.NewNode(ast.KindText, ast.Text{"abc"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 					),
 				),
 			),
@@ -632,15 +632,15 @@ func TestCompiler(t *testing.T) {
 					ast.KindAnyOf, nil,
 					ast.NewNode(
 						ast.KindPattern, nil,
-						ast.NewNode(ast.KindText, ast.Text{"abc"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 						ast.NewNode(ast.KindList, ast.List{Chars: "abc"}),
-						ast.NewNode(ast.KindText, ast.Text{"ghi"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "ghi"}),
 					),
 					ast.NewNode(
 						ast.KindPattern, nil,
-						ast.NewNode(ast.KindText, ast.Text{"abc"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "abc"}),
 						ast.NewNode(ast.KindList, ast.List{Chars: "def"}),
-						ast.NewNode(ast.KindText, ast.Text{"ghi"}),
+						ast.NewNode(ast.KindText, ast.Text{Text: "ghi"}),
 					),
 				),
 			),

@@ -49,7 +49,7 @@ func TestRangeIndex(t *testing.T) {
 func BenchmarkIndexRange(b *testing.B) {
 	m := NewRange('0', '9', false)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, s := m.Index(bench_pattern)
 		releaseSegments(s)
 	}

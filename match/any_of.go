@@ -10,9 +10,8 @@ func NewAnyOf(m ...Matcher) AnyOf {
 	return AnyOf{Matchers(m)}
 }
 
-func (self *AnyOf) Add(m Matcher) error {
+func (self *AnyOf) Add(m Matcher) {
 	self.Matchers = append(self.Matchers, m)
-	return nil
 }
 
 func (self AnyOf) Match(s string) bool {

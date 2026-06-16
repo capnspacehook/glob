@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -26,7 +27,7 @@ func benchString(r testing.BenchmarkResult) string {
 			}
 		}
 
-		allocs = fmt.Sprintf("%d", r.MemAllocs/uint64(r.N))
+		allocs = strconv.FormatUint(r.MemAllocs/uint64(r.N), 10)
 	}
 
 	return fmt.Sprintf("%8d\t%s\t%s allocs", r.N, ns, allocs)
@@ -68,14 +69,14 @@ func main() {
 	fmt.Printf("result: %t\n", g.Match(*fixture))
 
 	cb := testing.Benchmark(func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			glob.Compile(*pattern, separators...)
 		}
 	})
 	fmt.Println("compile:", benchString(cb))
 
 	mb := testing.Benchmark(func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
+		for b.Loop() {
 			g.Match(*fixture)
 		}
 	})

@@ -39,7 +39,7 @@ func TestAnyIndex(t *testing.T) {
 func BenchmarkIndexAny(b *testing.B) {
 	m := NewAny(bench_separators)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, s := m.Index(bench_pattern)
 		releaseSegments(s)
 	}

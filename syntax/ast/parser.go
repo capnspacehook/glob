@@ -84,7 +84,6 @@ func parserMain(tree *Node, lex Lexer) (parseFn, *Node, error) {
 			return nil, tree, fmt.Errorf("unexpected token: %s", token)
 		}
 	}
-	return nil, tree, fmt.Errorf("unknown error")
 }
 
 func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
@@ -109,7 +108,7 @@ func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 		case lexer.RangeLo:
 			r, w := utf8.DecodeRuneInString(token.Raw)
 			if len(token.Raw) > w {
-				return nil, tree, fmt.Errorf("unexpected length of lo character")
+				return nil, tree, errors.New("unexpected length of lo character")
 			}
 			lo = r
 
@@ -119,7 +118,7 @@ func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 		case lexer.RangeHi:
 			r, w := utf8.DecodeRuneInString(token.Raw)
 			if len(token.Raw) > w {
-				return nil, tree, fmt.Errorf("unexpected length of lo character")
+				return nil, tree, errors.New("unexpected length of lo character")
 			}
 
 			hi = r
@@ -136,7 +135,7 @@ func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 			isChars := chars != ""
 
 			if isChars == isRange {
-				return nil, tree, fmt.Errorf("could not parse range")
+				return nil, tree, errors.New("could not parse range")
 			}
 
 			if isRange {

@@ -19,7 +19,7 @@ func Index(s, needle []rune) int {
 
 head:
 	for i := 0; i < ls && ls-i >= ln; i++ {
-		for y := 0; y < ln; y++ {
+		for y := range ln {
 			if s[i+y] != needle[y] {
 				continue head
 			}
@@ -131,7 +131,7 @@ func IndexLastRune(s []rune, r rune) int {
 
 func Equal(a, b []rune) bool {
 	if len(a) == len(b) {
-		for i := 0; i < len(a); i++ {
+		for i := range a {
 			if a[i] != b[i] {
 				return false
 			}

@@ -165,7 +165,8 @@ func TestGlob(t *testing.T) {
 			g := MustCompile(test.pattern, test.delimiters...)
 			result := g.Match(test.match)
 			if result != test.should {
-				t.Errorf("pattern %q matching %q should be %v but got %v\n%s",
+				t.Errorf(
+					"pattern %q matching %q should be %v but got %v\n%s",
 					test.pattern, test.match, test.should, result, g,
 				)
 			}
@@ -205,13 +206,13 @@ func TestQuoteMeta(t *testing.T) {
 }
 
 func BenchmarkParseGlob(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		Compile(pattern_all)
+	for b.Loop() {
+		_, _ = Compile(pattern_all)
 	}
 }
 
 func BenchmarkParseRegexp(b *testing.B) {
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		regexp.MustCompile(regexp_all)
 	}
 }
@@ -219,7 +220,7 @@ func BenchmarkParseRegexp(b *testing.B) {
 func BenchmarkAllGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_all)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_all_match)
 	}
 }
@@ -238,7 +239,7 @@ func BenchmarkAllRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_all)
 	f := []byte(fixture_all_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -246,7 +247,7 @@ func BenchmarkAllRegexpMatch(b *testing.B) {
 func BenchmarkAllGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_all)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_all_mismatch)
 	}
 }
@@ -265,7 +266,7 @@ func BenchmarkAllRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_all)
 	f := []byte(fixture_all_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -273,7 +274,7 @@ func BenchmarkAllRegexpMismatch(b *testing.B) {
 func BenchmarkMultipleGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_multiple)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_multiple_match)
 	}
 }
@@ -282,7 +283,7 @@ func BenchmarkMultipleRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_multiple)
 	f := []byte(fixture_multiple_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -290,7 +291,7 @@ func BenchmarkMultipleRegexpMatch(b *testing.B) {
 func BenchmarkMultipleGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_multiple)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_multiple_mismatch)
 	}
 }
@@ -299,7 +300,7 @@ func BenchmarkMultipleRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_multiple)
 	f := []byte(fixture_multiple_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -307,7 +308,7 @@ func BenchmarkMultipleRegexpMismatch(b *testing.B) {
 func BenchmarkAlternativesGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_match)
 	}
 }
@@ -315,7 +316,7 @@ func BenchmarkAlternativesGlobMatch(b *testing.B) {
 func BenchmarkAlternativesGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_mismatch)
 	}
 }
@@ -324,7 +325,7 @@ func BenchmarkAlternativesRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives)
 	f := []byte(fixture_alternatives_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -333,7 +334,7 @@ func BenchmarkAlternativesRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives)
 	f := []byte(fixture_alternatives_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -341,7 +342,7 @@ func BenchmarkAlternativesRegexpMismatch(b *testing.B) {
 func BenchmarkAlternativesSuffixFirstGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_suffix_first_match)
 	}
 }
@@ -349,7 +350,7 @@ func BenchmarkAlternativesSuffixFirstGlobMatch(b *testing.B) {
 func BenchmarkAlternativesSuffixFirstGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_suffix_first_mismatch)
 	}
 }
@@ -357,7 +358,7 @@ func BenchmarkAlternativesSuffixFirstGlobMismatch(b *testing.B) {
 func BenchmarkAlternativesSuffixSecondGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_suffix_second)
 	}
 }
@@ -365,7 +366,7 @@ func BenchmarkAlternativesSuffixSecondGlobMatch(b *testing.B) {
 func BenchmarkAlternativesCombineLiteGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_combine_lite)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_combine_lite)
 	}
 }
@@ -373,7 +374,7 @@ func BenchmarkAlternativesCombineLiteGlobMatch(b *testing.B) {
 func BenchmarkAlternativesCombineHardGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_alternatives_combine_hard)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_alternatives_combine_hard)
 	}
 }
@@ -382,7 +383,7 @@ func BenchmarkAlternativesSuffixFirstRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_suffix)
 	f := []byte(fixture_alternatives_suffix_first_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -391,7 +392,7 @@ func BenchmarkAlternativesSuffixFirstRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_suffix)
 	f := []byte(fixture_alternatives_suffix_first_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -400,7 +401,7 @@ func BenchmarkAlternativesSuffixSecondRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_suffix)
 	f := []byte(fixture_alternatives_suffix_second)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -409,7 +410,7 @@ func BenchmarkAlternativesCombineLiteRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_combine_lite)
 	f := []byte(fixture_alternatives_combine_lite)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -418,7 +419,7 @@ func BenchmarkAlternativesCombineHardRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_alternatives_combine_hard)
 	f := []byte(fixture_alternatives_combine_hard)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -426,7 +427,7 @@ func BenchmarkAlternativesCombineHardRegexpMatch(b *testing.B) {
 func BenchmarkPlainGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_plain)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_plain_match)
 	}
 }
@@ -435,7 +436,7 @@ func BenchmarkPlainRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_plain)
 	f := []byte(fixture_plain_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -443,7 +444,7 @@ func BenchmarkPlainRegexpMatch(b *testing.B) {
 func BenchmarkPlainGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_plain)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_plain_mismatch)
 	}
 }
@@ -452,7 +453,7 @@ func BenchmarkPlainRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_plain)
 	f := []byte(fixture_plain_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -460,7 +461,7 @@ func BenchmarkPlainRegexpMismatch(b *testing.B) {
 func BenchmarkPrefixGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_prefix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_prefix_suffix_match)
 	}
 }
@@ -469,7 +470,7 @@ func BenchmarkPrefixRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix)
 	f := []byte(fixture_prefix_suffix_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -477,7 +478,7 @@ func BenchmarkPrefixRegexpMatch(b *testing.B) {
 func BenchmarkPrefixGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_prefix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_prefix_suffix_mismatch)
 	}
 }
@@ -486,7 +487,7 @@ func BenchmarkPrefixRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix)
 	f := []byte(fixture_prefix_suffix_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -494,7 +495,7 @@ func BenchmarkPrefixRegexpMismatch(b *testing.B) {
 func BenchmarkSuffixGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_prefix_suffix_match)
 	}
 }
@@ -503,7 +504,7 @@ func BenchmarkSuffixRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_suffix)
 	f := []byte(fixture_prefix_suffix_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -511,7 +512,7 @@ func BenchmarkSuffixRegexpMatch(b *testing.B) {
 func BenchmarkSuffixGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_prefix_suffix_mismatch)
 	}
 }
@@ -520,7 +521,7 @@ func BenchmarkSuffixRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_suffix)
 	f := []byte(fixture_prefix_suffix_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -528,7 +529,7 @@ func BenchmarkSuffixRegexpMismatch(b *testing.B) {
 func BenchmarkPrefixSuffixGlobMatch(b *testing.B) {
 	m, _ := Compile(pattern_prefix_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_prefix_suffix_match)
 	}
 }
@@ -537,7 +538,7 @@ func BenchmarkPrefixSuffixRegexpMatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix_suffix)
 	f := []byte(fixture_prefix_suffix_match)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }
@@ -545,7 +546,7 @@ func BenchmarkPrefixSuffixRegexpMatch(b *testing.B) {
 func BenchmarkPrefixSuffixGlobMismatch(b *testing.B) {
 	m, _ := Compile(pattern_prefix_suffix)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(fixture_prefix_suffix_mismatch)
 	}
 }
@@ -554,7 +555,7 @@ func BenchmarkPrefixSuffixRegexpMismatch(b *testing.B) {
 	m := regexp.MustCompile(regexp_prefix_suffix)
 	f := []byte(fixture_prefix_suffix_mismatch)
 
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = m.Match(f)
 	}
 }

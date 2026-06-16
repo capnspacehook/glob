@@ -3,8 +3,9 @@ package debug
 import (
 	"bytes"
 	"fmt"
-	"github.com/gobwas/glob/match"
 	"math/rand"
+
+	"github.com/gobwas/glob/match"
 )
 
 func Graphviz(pattern string, m match.Matcher) string {
@@ -27,7 +28,7 @@ func graphviz_internal(m match.Matcher, id string) string {
 			default:
 				sub := fmt.Sprintf("%x", rand.Int63())
 				fmt.Fprintf(buf, `"%s"->"%s";`, id, sub)
-				fmt.Fprintf(buf, graphviz_internal(n, sub))
+				fmt.Fprint(buf, graphviz_internal(n, sub))
 			}
 		}
 
@@ -35,7 +36,7 @@ func graphviz_internal(m match.Matcher, id string) string {
 		fmt.Fprintf(buf, `"%s"[label="AnyOf"];`, id)
 		for _, m := range matcher.Matchers {
 			rnd := rand.Int63()
-			fmt.Fprintf(buf, graphviz_internal(m, fmt.Sprintf("%x", rnd)))
+			fmt.Fprint(buf, graphviz_internal(m, fmt.Sprintf("%x", rnd)))
 			fmt.Fprintf(buf, `"%s"->"%x";`, id, rnd)
 		}
 
@@ -43,7 +44,7 @@ func graphviz_internal(m match.Matcher, id string) string {
 		fmt.Fprintf(buf, `"%s"[label="EveryOf"];`, id)
 		for _, m := range matcher.Matchers {
 			rnd := rand.Int63()
-			fmt.Fprintf(buf, graphviz_internal(m, fmt.Sprintf("%x", rnd)))
+			fmt.Fprint(buf, graphviz_internal(m, fmt.Sprintf("%x", rnd)))
 			fmt.Fprintf(buf, `"%s"->"%x";`, id, rnd)
 		}
 

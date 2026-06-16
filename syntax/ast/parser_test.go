@@ -14,7 +14,7 @@ type stubLexer struct {
 
 func (s *stubLexer) Next() (ret lexer.Token) {
 	if s.pos == len(s.tokens) {
-		return lexer.Token{lexer.EOF, ""}
+		return lexer.Token{Type: lexer.EOF, Raw: ""}
 	}
 	ret = s.tokens[s.pos]
 	s.pos++
@@ -29,8 +29,8 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "abc",
 			tokens: []lexer.Token{
-				{lexer.Text, "abc"},
-				{lexer.EOF, ""},
+				{Type: lexer.Text, Raw: "abc"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -40,10 +40,10 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "a*c",
 			tokens: []lexer.Token{
-				{lexer.Text, "a"},
-				{lexer.Any, "*"},
-				{lexer.Text, "c"},
-				{lexer.EOF, ""},
+				{Type: lexer.Text, Raw: "a"},
+				{Type: lexer.Any, Raw: "*"},
+				{Type: lexer.Text, Raw: "c"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -55,10 +55,10 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "a**c",
 			tokens: []lexer.Token{
-				{lexer.Text, "a"},
-				{lexer.Super, "**"},
-				{lexer.Text, "c"},
-				{lexer.EOF, ""},
+				{Type: lexer.Text, Raw: "a"},
+				{Type: lexer.Super, Raw: "**"},
+				{Type: lexer.Text, Raw: "c"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -70,10 +70,10 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "a?c",
 			tokens: []lexer.Token{
-				{lexer.Text, "a"},
-				{lexer.Single, "?"},
-				{lexer.Text, "c"},
-				{lexer.EOF, ""},
+				{Type: lexer.Text, Raw: "a"},
+				{Type: lexer.Single, Raw: "?"},
+				{Type: lexer.Text, Raw: "c"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -85,13 +85,13 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "[!a-z]",
 			tokens: []lexer.Token{
-				{lexer.RangeOpen, "["},
-				{lexer.Not, "!"},
-				{lexer.RangeLo, "a"},
-				{lexer.RangeBetween, "-"},
-				{lexer.RangeHi, "z"},
-				{lexer.RangeClose, "]"},
-				{lexer.EOF, ""},
+				{Type: lexer.RangeOpen, Raw: "["},
+				{Type: lexer.Not, Raw: "!"},
+				{Type: lexer.RangeLo, Raw: "a"},
+				{Type: lexer.RangeBetween, Raw: "-"},
+				{Type: lexer.RangeHi, Raw: "z"},
+				{Type: lexer.RangeClose, Raw: "]"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -101,10 +101,10 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "[az]",
 			tokens: []lexer.Token{
-				{lexer.RangeOpen, "["},
-				{lexer.Text, "az"},
-				{lexer.RangeClose, "]"},
-				{lexer.EOF, ""},
+				{Type: lexer.RangeOpen, Raw: "["},
+				{Type: lexer.Text, Raw: "az"},
+				{Type: lexer.RangeClose, Raw: "]"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -114,12 +114,12 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "{a,z}",
 			tokens: []lexer.Token{
-				{lexer.TermsOpen, "{"},
-				{lexer.Text, "a"},
-				{lexer.Separator, ","},
-				{lexer.Text, "z"},
-				{lexer.TermsClose, "}"},
-				{lexer.EOF, ""},
+				{Type: lexer.TermsOpen, Raw: "{"},
+				{Type: lexer.Text, Raw: "a"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.Text, Raw: "z"},
+				{Type: lexer.TermsClose, Raw: "}"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -139,14 +139,14 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "/{z,ab}*",
 			tokens: []lexer.Token{
-				{lexer.Text, "/"},
-				{lexer.TermsOpen, "{"},
-				{lexer.Text, "z"},
-				{lexer.Separator, ","},
-				{lexer.Text, "ab"},
-				{lexer.TermsClose, "}"},
-				{lexer.Any, "*"},
-				{lexer.EOF, ""},
+				{Type: lexer.Text, Raw: "/"},
+				{Type: lexer.TermsOpen, Raw: "{"},
+				{Type: lexer.Text, Raw: "z"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.Text, Raw: "ab"},
+				{Type: lexer.TermsClose, Raw: "}"},
+				{Type: lexer.Any, Raw: "*"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
@@ -168,29 +168,29 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "{a,{x,y},?,[a-z],[!qwe]}",
 			tokens: []lexer.Token{
-				{lexer.TermsOpen, "{"},
-				{lexer.Text, "a"},
-				{lexer.Separator, ","},
-				{lexer.TermsOpen, "{"},
-				{lexer.Text, "x"},
-				{lexer.Separator, ","},
-				{lexer.Text, "y"},
-				{lexer.TermsClose, "}"},
-				{lexer.Separator, ","},
-				{lexer.Single, "?"},
-				{lexer.Separator, ","},
-				{lexer.RangeOpen, "["},
-				{lexer.RangeLo, "a"},
-				{lexer.RangeBetween, "-"},
-				{lexer.RangeHi, "z"},
-				{lexer.RangeClose, "]"},
-				{lexer.Separator, ","},
-				{lexer.RangeOpen, "["},
-				{lexer.Not, "!"},
-				{lexer.Text, "qwe"},
-				{lexer.RangeClose, "]"},
-				{lexer.TermsClose, "}"},
-				{lexer.EOF, ""},
+				{Type: lexer.TermsOpen, Raw: "{"},
+				{Type: lexer.Text, Raw: "a"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.TermsOpen, Raw: "{"},
+				{Type: lexer.Text, Raw: "x"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.Text, Raw: "y"},
+				{Type: lexer.TermsClose, Raw: "}"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.Single, Raw: "?"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.RangeOpen, Raw: "["},
+				{Type: lexer.RangeLo, Raw: "a"},
+				{Type: lexer.RangeBetween, Raw: "-"},
+				{Type: lexer.RangeHi, Raw: "z"},
+				{Type: lexer.RangeClose, Raw: "]"},
+				{Type: lexer.Separator, Raw: ","},
+				{Type: lexer.RangeOpen, Raw: "["},
+				{Type: lexer.Not, Raw: "!"},
+				{Type: lexer.Text, Raw: "qwe"},
+				{Type: lexer.RangeClose, Raw: "]"},
+				{Type: lexer.TermsClose, Raw: "}"},
+				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
