@@ -1,0 +1,11 @@
+# 2026/06/16 19:35:45.002301 [TestLexerText] [rapid] draw input: "�"
+# 2026/06/16 19:35:45.002311 [TestLexerText] expected text token, got error<"could not read rune">
+# 2026/06/16 19:35:45.002318 [TestLexerText] expected "�", got "could not read rune"
+# 2026/06/16 19:35:45.002321 [TestLexerText] expected eof token, got error<"could not read rune">
+# 
+v0.4.8#16257687205174706411
+0x5555555555555
+0x0
+0xe3e05a098777c
+0x27
+0x0

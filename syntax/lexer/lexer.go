@@ -51,7 +51,7 @@ func (t *tokens) empty() bool {
 	return len(*t) == 0
 }
 
-const eof rune = 0
+const eof rune = -1
 
 type lexer struct {
 	data string
@@ -96,7 +96,7 @@ func (l *lexer) peekAt(pos int) (rune, int) {
 	}
 
 	r, w := utf8.DecodeRuneInString(l.data[pos:])
-	if r == utf8.RuneError {
+	if r == utf8.RuneError && w <= 1 {
 		l.error("could not read rune")
 		r = eof
 		w = 0

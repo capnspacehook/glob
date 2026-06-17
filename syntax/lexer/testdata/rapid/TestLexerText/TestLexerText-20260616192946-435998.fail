@@ -1,0 +1,10 @@
+# 2026/06/16 19:29:46.533097 [TestLexerText] [rapid] draw input: "\x00"
+# 2026/06/16 19:29:46.533104 [TestLexerText] expected text token, got eof<"">
+# 2026/06/16 19:29:46.533109 [TestLexerText] expected "\x00", got ""
+# 
+v0.4.8#17858905421307713154
+0x5555555555555
+0x0
+0xe3e05a098777c
+0x22
+0x0
