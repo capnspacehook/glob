@@ -14,7 +14,7 @@ const sep = '/'
 
 var (
 	// classMembers never include the separator (see the header note on classes).
-	classMembers = []rune{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}
+	classMembers = []rune{'a', 'b', 'c', 'd', '\u00e9', '\u672c', '\uff0f', '\uff1f', '\U0001f600'}
 
 	tokens = []rune{'*', '?', '[', ']', '{', '}', '-', '\\'}
 	// alphabet is used for literal pattern characters and target characters. It
@@ -63,7 +63,7 @@ func genPattern(t *rapid.T) string {
 			return false
 		}
 
-		for i := range n {
+		for step := 0; step < n; step++ {
 			if inAnyOf {
 				if anyOfN > 0 {
 					if anyOfLen != anyOfN {
@@ -77,7 +77,9 @@ func genPattern(t *rapid.T) string {
 			}
 
 			maxChoice := 8
-			if inAnyOf {
+			// don't generate '{}' as doublestar doesn't always handle
+			// it correctly
+			if step == n-1 {
 				maxChoice = 7
 			}
 
@@ -104,10 +106,9 @@ func genPattern(t *rapid.T) string {
 				sb.WriteByte('[')
 				// negate 50% of the time
 				// var negated bool
-				// TODO: fix or comment out
-				if rapid.Bool().Draw(t, "negated") {
+				if !lastStar && rapid.Bool().Draw(t, "negated") {
 					// negated = true
-					// sb.WriteByte('!')
+					sb.WriteByte('!')
 				}
 
 				for range listLen {
@@ -130,14 +131,14 @@ func genPattern(t *rapid.T) string {
 				sb.WriteByte(']')
 				lastStar = notLastStar()
 			case 8: // any of '{ }'
-				// don't generate '{}' as doublestar doesn't always handle
-				// it correctly
-				if i == n-1 {
-					continue
-				}
-
 				sb.WriteByte('{')
-				writePattern(n-i-1, true, rapid.IntRange(1, 3).Draw(t, "anyOfLen"))
+
+				al := rapid.IntRange(1, 3).Draw(t, "anyOfLen")
+				stepsLeft := n - step - 1
+				al = min(al, stepsLeft)
+
+				writePattern(al, true, al)
+				step += al
 				// don't set lastStar to false; if there was a star before,
 				// then doublestar will incorrectly handle patterns like '*{*}'
 			}

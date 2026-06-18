@@ -7,7 +7,7 @@ import (
 
 var matchSink bool
 
-func FuzzGlob(f *testing.F) {
+func FuzzGlobCompileMatch(f *testing.F) {
 	for _, tt := range tests {
 		var delimiterSet bool
 		var delimiter rune

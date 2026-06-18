@@ -6,9 +6,10 @@ import (
 )
 
 type BTree struct {
-	Value            Matcher
-	Left             Matcher
-	Right            Matcher
+	Value Matcher
+	Left  Matcher
+	Right Matcher
+
 	ValueLengthRunes int
 	LeftLengthRunes  int
 	RightLengthRunes int
@@ -46,24 +47,50 @@ func NewBTree(Value, Left, Right Matcher) (tree BTree) {
 	return tree
 }
 
-func (self BTree) Len() int {
-	return self.LengthRunes
+func (b BTree) Len() int {
+	return b.LengthRunes
 }
 
-func (self BTree) Index(s string) (index int, segments []int) {
+func (b BTree) Index(s string) (int, []int) {
+	for i := 0; i <= len(s); {
+		var segments []int
+		var length int
+
+		for {
+			if b.Match(s[i : i+length]) {
+				segments = append(segments, length)
+			}
+			if i+length >= len(s) {
+				break
+			}
+			_, w := utf8.DecodeRuneInString(s[i+length:])
+			length += w
+		}
+
+		if len(segments) > 0 {
+			return i, segments
+		}
+		if i >= len(s) {
+			break
+		}
+
+		_, w := utf8.DecodeRuneInString(s[i:])
+		i += w
+	}
+
 	return -1, nil
 }
 
-func (self BTree) Match(s string) bool {
+func (b BTree) Match(s string) bool {
 	inputLen := len(s)
 	// try to cut unnecessary parts
 	// by knowledge of length of right and left part
-	offset, limit := self.offsetLimit(inputLen)
+	offset, limit := b.offsetLimit(inputLen)
 
 	// offset may equal limit if s is empty
 	for offset <= limit {
 		// search for matching part in substring
-		index, segments := self.Value.Index(s[offset:limit])
+		index, segments := b.Value.Index(s[offset:limit])
 		if index == -1 {
 			releaseSegments(segments)
 			return false
@@ -71,8 +98,8 @@ func (self BTree) Match(s string) bool {
 
 		l := s[:offset+index]
 		var left bool
-		if self.Left != nil {
-			left = self.Left.Match(l)
+		if b.Left != nil {
+			left = b.Left.Match(l)
 		} else {
 			left = l == ""
 		}
@@ -90,8 +117,8 @@ func (self BTree) Match(s string) bool {
 					r = s[offset+index+length:]
 				}
 
-				if self.Right != nil {
-					right = self.Right.Match(r)
+				if b.Right != nil {
+					right = b.Right.Match(r)
 				} else {
 					right = r == ""
 				}
@@ -117,37 +144,37 @@ func (self BTree) Match(s string) bool {
 	return false
 }
 
-func (self BTree) offsetLimit(inputLen int) (offset int, limit int) {
+func (b BTree) offsetLimit(inputLen int) (offset int, limit int) {
 	// self.Length, self.RLen and self.LLen are values meaning the length of runes for each part
 	// here we manipulating byte length for better optimizations
 	// but these checks still works, cause minLen of 1-rune string is 1 byte.
-	if self.LengthRunes != -1 && self.LengthRunes > inputLen {
+	if b.LengthRunes != -1 && b.LengthRunes > inputLen {
 		return 0, 0
 	}
-	if self.LeftLengthRunes >= 0 {
-		offset = self.LeftLengthRunes
+	if b.LeftLengthRunes >= 0 {
+		offset = b.LeftLengthRunes
 	}
-	if self.RightLengthRunes >= 0 {
-		limit = inputLen - self.RightLengthRunes
+	if b.RightLengthRunes >= 0 {
+		limit = inputLen - b.RightLengthRunes
 	} else {
 		limit = inputLen
 	}
 	return offset, limit
 }
 
-func (self BTree) String() string {
+func (b BTree) String() string {
 	const n string = "<nil>"
 	var l, r string
-	if self.Left == nil {
+	if b.Left == nil {
 		l = n
 	} else {
-		l = self.Left.String()
+		l = b.Left.String()
 	}
-	if self.Right == nil {
+	if b.Right == nil {
 		r = n
 	} else {
-		r = self.Right.String()
+		r = b.Right.String()
 	}
 
-	return fmt.Sprintf("<btree:[%s<-%s->%s]>", l, self.Value, r)
+	return fmt.Sprintf("<btree:[%s<-%s->%s]>", l, b.Value, r)
 }
