@@ -42,16 +42,14 @@ func assertToken(t *rapid.T, tok Token, expType TokenType, expRaw string) {
 	t.Helper()
 
 	if tok.Type != expType {
-		t.Errorf("expected %s token, got %s", expType, tok.Type)
+		t.Fatalf("expected %s token, got %s", expType, tok.Type)
 	}
 	if tok.Raw != expRaw {
-		t.Errorf("expected %s, got %s", expRaw, tok.Raw)
+		t.Fatalf("expected %s, got %s", expRaw, tok.Raw)
 	}
 }
 
-var toQuote = []rune{'[', ']', '-', '{', '}', '\\'}
-
-func quoteStr(s string) string {
+func quoteStr(s string, toQuote []rune) string {
 	var quoted string
 	for _, r := range s {
 		if slices.Contains(toQuote, r) {
@@ -67,21 +65,19 @@ func quoteStr(s string) string {
 func TestLexerTerms(t *testing.T) {
 	rapid.Check(t, func(t *rapid.T) {
 		isRange := rapid.Bool().Draw(t, "isRange")
-		input := rapid.String().Filter(func(s string) bool {
-			return true
-		}).Draw(t, "input")
+		input := rapid.String().Draw(t, "input")
 		if isRange {
-			input = "[" + quoteStr(input) + "]"
+			input = "[" + quoteStr(input, specials) + "]"
 		} else {
-			input = "{" + quoteStr(input) + "}"
+			input = "{" + quoteStr(input, specials) + "}"
 		}
-		t.Logf("input=%q", input)
+		t.Logf("input=%s", input)
 
 		l := NewLexer(input)
 		tok := l.Next()
 
 		if isRange {
-			assertToken(t, tok, RangeOpen, string(charRangeOpen))
+			assertToken(t, tok, ListOpen, string(charListOpen))
 		} else {
 			assertToken(t, tok, TermsOpen, string(charTermsOpen))
 		}
@@ -96,9 +92,153 @@ func TestLexerTerms(t *testing.T) {
 		}
 
 		if isRange {
-			assertToken(t, lastTok, RangeClose, string(charRangeClose))
+			assertToken(t, lastTok, ListClose, string(charListClose))
 		} else {
 			assertToken(t, lastTok, TermsClose, string(charTermsClose))
+		}
+	})
+}
+
+var (
+	termRunes = []rune{
+		charListOpen,
+		charListClose,
+		charTermsOpen,
+		charTermsClose,
+		charEscape,
+	}
+	listToQuote = append(specials, charListNot, charRangeBetween)
+)
+
+func writeList(t *rapid.T, sb *strings.Builder) (ranges int, negated bool) {
+	length := rapid.IntRange(1, 16).Draw(t, "length")
+
+	sb.WriteByte('[')
+	if rapid.Bool().Draw(t, "negated") {
+		sb.WriteByte('!')
+		negated = true
+	}
+
+	for range length {
+		// add a range 33% of the time
+		choice := rapid.IntRange(0, 2).Draw(t, "choice")
+		if choice == 0 {
+			writeRune(t, sb, listToQuote)
+		} else {
+			ranges++
+			writeRune(t, sb, listToQuote)
+			sb.WriteByte('-')
+			writeRune(t, sb, listToQuote)
+		}
+	}
+	sb.WriteByte(']')
+
+	return
+}
+
+func writeRune(t *rapid.T, sb *strings.Builder, toQuote []rune) {
+	r := rapid.Rune().Draw(t, "rune")
+	if slices.Contains(toQuote, r) {
+		sb.WriteByte('\\')
+		sb.WriteRune(r)
+		return
+	}
+	sb.WriteRune(r)
+}
+
+func TestLexerLists(t *testing.T) {
+	rapid.Check(t, testLexerLists)
+}
+
+func FuzzLexerLists(f *testing.F) {
+	f.Fuzz(rapid.MakeFuzz(testLexerLists))
+}
+
+func testLexerLists(t *rapid.T) {
+	rapid.Check(t, func(t *rapid.T) {
+		var sb strings.Builder
+
+		prefixLen := rapid.IntRange(0, 8).Draw(t, "prefixLen")
+		for range prefixLen {
+			writeRune(t, &sb, termRunes)
+		}
+
+		var numRanges int
+		var numNots int
+		numLists := rapid.IntRange(1, 3).Draw(t, "numLists")
+		for range numLists {
+			n, negated := writeList(t, &sb)
+			numRanges += n
+			if negated {
+				numNots++
+			}
+
+			fillerLen := rapid.IntRange(0, 4).Draw(t, "fillerLen")
+			for range fillerLen {
+				writeRune(t, &sb, termRunes)
+			}
+		}
+
+		suffixLen := rapid.IntRange(0, 8).Draw(t, "suffixLen")
+		for range suffixLen {
+			writeRune(t, &sb, termRunes)
+		}
+
+		input := sb.String()
+		t.Logf("input=%s", input)
+
+		var (
+			listOpens     int
+			listNots      int
+			rangeLows     int
+			rangeBetweens int
+			rangeHighs    int
+			listCloses    int
+		)
+		l := NewLexer(input)
+		for {
+			tok := l.Next()
+			if tok.Type == EOF {
+				break
+			}
+
+			switch tok.Type {
+			case Error:
+				t.Fatalf("unexpected error: %s", tok.Raw)
+			case ListOpen:
+				listOpens++
+			case Not:
+				listNots++
+			case RangeLow:
+				rangeLows++
+			case RangeBetween:
+				rangeBetweens++
+			case RangeHigh:
+				rangeHighs++
+			case ListClose:
+				listCloses++
+			}
+
+			t.Logf("token: %s", tok)
+		}
+
+		if listOpens != numLists {
+			t.Errorf("expected %d list opens, got %d", numLists, listOpens)
+		}
+		if listNots != numNots {
+			t.Errorf("expected %d list nots, got %d", numNots, listNots)
+		}
+		if rangeLows != numRanges {
+			t.Errorf("expected %d range lows, got %d", numRanges, rangeLows)
+		}
+		if rangeBetweens != numRanges {
+			t.Errorf("expected %d range betweens, got %d", numRanges, rangeBetweens)
+		}
+		if rangeHighs != numRanges {
+			t.Errorf("expected %d range highs, got %d", numRanges, rangeHighs)
+		}
+		if listCloses != numLists {
+			t.Errorf("expected %d list closes, got %d", numLists, listCloses)
 		}
 	})
 }
@@ -108,18 +248,6 @@ func TestLexer(t *testing.T) {
 		pattern string
 		items   []Token
 	}{
-		// {
-		// 	pattern: "[*a-z]",
-		// 	items: []Token{
-		// 		{RangeOpen, "["},
-		// 		{Text, "*"},
-		// 		{RangeLo, "a"},
-		// 		{RangeBetween, "-"},
-		// 		{RangeHi, "z"},
-		// 		{RangeClose, "]"},
-		// 		{EOF, ""},
-		// 	},
-		// },
 		{
 			pattern: "",
 			items: []Token{
@@ -140,11 +268,11 @@ func TestLexer(t *testing.T) {
 				{TermsOpen, "{"},
 				{Text, "rate"},
 				{Separator, ","},
-				{RangeOpen, "["},
-				{RangeLo, "0"},
+				{ListOpen, "["},
+				{RangeLow, "0"},
 				{RangeBetween, "-"},
-				{RangeHi, "9"},
-				{RangeClose, "]"},
+				{RangeHigh, "9"},
+				{ListClose, "]"},
 				{Text, "]"},
 				{TermsClose, "}"},
 				{Any, "*"},
@@ -199,42 +327,42 @@ func TestLexer(t *testing.T) {
 		{
 			pattern: "[日-語]",
 			items: []Token{
-				{RangeOpen, "["},
-				{RangeLo, "日"},
+				{ListOpen, "["},
+				{RangeLow, "日"},
 				{RangeBetween, "-"},
-				{RangeHi, "語"},
-				{RangeClose, "]"},
+				{RangeHigh, "語"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: "[!日-語]",
 			items: []Token{
-				{RangeOpen, "["},
+				{ListOpen, "["},
 				{Not, "!"},
-				{RangeLo, "日"},
+				{RangeLow, "日"},
 				{RangeBetween, "-"},
-				{RangeHi, "語"},
-				{RangeClose, "]"},
+				{RangeHigh, "語"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: "[日本語]",
 			items: []Token{
-				{RangeOpen, "["},
+				{ListOpen, "["},
 				{Text, "日本語"},
-				{RangeClose, "]"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: "[!日本語]",
 			items: []Token{
-				{RangeOpen, "["},
+				{ListOpen, "["},
 				{Not, "!"},
 				{Text, "日本語"},
-				{RangeClose, "]"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -244,11 +372,11 @@ func TestLexer(t *testing.T) {
 			// not the character list {b, -, a}.
 			pattern: `[\b-\a]`,
 			items: []Token{
-				{RangeOpen, "["},
-				{RangeLo, "b"},
+				{ListOpen, "["},
+				{RangeLow, "b"},
 				{RangeBetween, "-"},
-				{RangeHi, "a"},
-				{RangeClose, "]"},
+				{RangeHigh, "a"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -256,11 +384,11 @@ func TestLexer(t *testing.T) {
 			// An escaped hi bound, e.g. a special character.
 			pattern: `[a-\]]`,
 			items: []Token{
-				{RangeOpen, "["},
-				{RangeLo, "a"},
+				{ListOpen, "["},
+				{RangeLow, "a"},
 				{RangeBetween, "-"},
-				{RangeHi, "]"},
-				{RangeClose, "]"},
+				{RangeHigh, "]"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -268,9 +396,9 @@ func TestLexer(t *testing.T) {
 			// An escaped char not followed by '-' is still a character list.
 			pattern: `[\*abc]`,
 			items: []Token{
-				{RangeOpen, "["},
+				{ListOpen, "["},
 				{Text, "*abc"},
-				{RangeClose, "]"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -302,12 +430,12 @@ func TestLexer(t *testing.T) {
 			pattern: "{[!日-語],*,?,{a,b,\\c}}",
 			items: []Token{
 				{TermsOpen, "{"},
-				{RangeOpen, "["},
+				{ListOpen, "["},
 				{Not, "!"},
-				{RangeLo, "日"},
+				{RangeLow, "日"},
 				{RangeBetween, "-"},
-				{RangeHi, "語"},
-				{RangeClose, "]"},
+				{RangeHigh, "語"},
+				{ListClose, "]"},
 				{Separator, ","},
 				{Any, "*"},
 				{Separator, ","},
@@ -321,6 +449,102 @@ func TestLexer(t *testing.T) {
 				{Text, "c"},
 				{TermsClose, "}"},
 				{TermsClose, "}"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[\--\-]`,
+			items: []Token{
+				{ListOpen, "["},
+				{RangeLow, "-"},
+				{RangeBetween, "-"},
+				{RangeHigh, "-"},
+				{ListClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[\*a-z]`,
+			items: []Token{
+				{ListOpen, "["},
+				{Text, "*"},
+				{RangeLow, "a"},
+				{RangeBetween, "-"},
+				{RangeHigh, "z"},
+				{ListClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[a-z\*]`,
+			items: []Token{
+				{ListOpen, "["},
+				{RangeLow, "a"},
+				{RangeBetween, "-"},
+				{RangeHigh, "z"},
+				{Text, "*"},
+				{ListClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[\?a-z\*]`,
+			items: []Token{
+				{ListOpen, "["},
+				{Text, "?"},
+				{RangeLow, "a"},
+				{RangeBetween, "-"},
+				{RangeHigh, "z"},
+				{Text, "*"},
+				{ListClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[a-zA-Z]`,
+			items: []Token{
+				{ListOpen, "["},
+				{RangeLow, "a"},
+				{RangeBetween, "-"},
+				{RangeHigh, "z"},
+				{RangeLow, "A"},
+				{RangeBetween, "-"},
+				{RangeHigh, "Z"},
+				{ListClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `ab[\?a-z\*]cd`,
+			items: []Token{
+				{Text, "ab"},
+				{ListOpen, "["},
+				{Text, "?"},
+				{RangeLow, "a"},
+				{RangeBetween, "-"},
+				{RangeHigh, "z"},
+				{Text, "*"},
+				{ListClose, "]"},
+				{Text, "cd"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[!a]`,
+			items: []Token{
+				{ListOpen, "["},
+				{Not, "!"},
+				{Text, "a"},
+				{ListClose, "]"},
+				{EOF, ""},
+			},
+		},
+		{
+			pattern: `[\!a]`,
+			items: []Token{
+				{ListOpen, "["},
+				{Text, "!a"},
+				{ListClose, "]"},
 				{EOF, ""},
 			},
 		},

@@ -2,6 +2,7 @@ package lexer
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 	"unicode/utf8"
 
@@ -13,26 +14,31 @@ const (
 	charComma        = ','
 	charSingle       = '?'
 	charEscape       = '\\'
-	charRangeOpen    = '['
-	charRangeClose   = ']'
+	charListOpen     = '['
+	charListClose    = ']'
 	charTermsOpen    = '{'
 	charTermsClose   = '}'
-	charRangeNot     = '!'
+	charListNot      = '!'
 	charRangeBetween = '-'
 )
 
-var specials = []byte{
-	charAny,
-	charSingle,
-	charEscape,
-	charRangeOpen,
-	charRangeClose,
-	charTermsOpen,
-	charTermsClose,
-}
+var (
+	specials = []rune{
+		charAny,
+		charSingle,
+		charEscape,
+		charListOpen,
+		charListClose,
+		charTermsOpen,
+		charTermsClose,
+	}
 
-func Special(c byte) bool {
-	return slices.Contains(specials, c)
+	inTextBreakers  = []rune{charSingle, charAny, charListOpen, charTermsOpen}
+	inTermsBreakers = append(inTextBreakers, charTermsClose, charComma)
+)
+
+func IsSpecial(r rune) bool {
+	return slices.Contains(specials, r)
 }
 
 type tokens []Token
@@ -138,6 +144,10 @@ func (l *lexer) error(f string) {
 	l.err = errors.New(f)
 }
 
+func (l *lexer) errorf(f string, args ...interface{}) {
+	l.err = fmt.Errorf(f, args...)
+}
+
 func (l *lexer) inTerms() bool {
 	return l.termsLevel > 0
 }
@@ -149,11 +159,6 @@ func (l *lexer) termsEnter() {
 func (l *lexer) termsLeave() {
 	l.termsLevel--
 }
-
-var (
-	inTextBreakers  = []rune{charSingle, charAny, charRangeOpen, charTermsOpen}
-	inTermsBreakers = append(inTextBreakers, charTermsClose, charComma)
-)
 
 func (l *lexer) readItem() {
 	r := l.read()
@@ -168,9 +173,11 @@ func (l *lexer) readItem() {
 	case r == charTermsClose && l.inTerms():
 		l.tokens.push(Token{TermsClose, string(r)})
 		l.termsLeave()
-	case r == charRangeOpen:
-		l.tokens.push(Token{RangeOpen, string(r)})
-		l.readRange()
+	case r == charListOpen:
+		l.tokens.push(Token{ListOpen, string(r)})
+		l.readList()
+	case r == charListClose:
+		l.error("unexpected list close")
 	case r == charSingle:
 		l.tokens.push(Token{Single, string(r)})
 	case r == charAny:
@@ -193,11 +200,10 @@ func (l *lexer) readItem() {
 	}
 }
 
-func (l *lexer) readRange() {
+func (l *lexer) readList() {
 	var (
-		wantHi    bool
-		wantClose bool
-		seenNot   bool
+		chars []rune
+		first = true
 	)
 
 	for {
@@ -207,70 +213,70 @@ func (l *lexer) readRange() {
 			return
 		}
 
-		if wantClose {
-			if r != charRangeClose {
-				l.error("expected close range character")
-			} else {
-				l.tokens.push(Token{RangeClose, string(r)})
+		if r == charListClose {
+			if len(chars) > 0 {
+				l.tokens.push(Token{Text, string(chars)})
 			}
+			l.tokens.push(Token{ListClose, string(r)})
 			return
 		}
 
-		if wantHi {
-			// the hi bound may be escaped, ex [a-\]]
-			if r == charEscape {
-				r = l.read()
-				if r == eof {
-					l.error("unexpected end of input")
-					return
-				}
+		if first {
+			first = false
+			if r == charListNot {
+				l.tokens.push(Token{Not, string(r)})
+				continue
 			}
-			l.tokens.push(Token{RangeHi, string(r)})
-			wantClose = true
-			continue
 		}
 
-		if !seenNot && r == charRangeNot {
-			l.tokens.push(Token{Not, string(r)})
-			seenNot = true
-			continue
-		}
-
+		var escaped bool
 		if r == charEscape {
-			// the lo bound is escaped, e.g. [\b-\a]. The escaped character
-			// is the real lo bound, so look past it for the range separator
-			esc, ew := l.peek()
-			if esc == eof {
+			escaped = true
+			r = l.read()
+			if r == eof {
 				l.error("unexpected end of input")
 				return
 			}
-			if n, w := l.peekAt(l.pos + ew); n == charRangeBetween {
-				l.seek(ew) // consume the escaped lo character
-				l.seek(w)  // consume the range separator
-				l.tokens.push(Token{RangeLo, string(esc)})
-				l.tokens.push(Token{RangeBetween, string(n)})
-				wantHi = true
+		}
+
+		if !escaped && IsSpecial(r) {
+			l.errorf("unexpected special character %c in character class", r)
+			return
+		}
+
+		if sep, sepWidth := l.peek(); sep == charRangeBetween {
+			peekHi, _ := l.peekAt(l.pos + sepWidth)
+			if peekHi != eof && peekHi != charListClose {
+				l.seek(sepWidth)
+				hi := l.read()
+
+				var hiEscaped bool
+				if hi == charEscape {
+					hiEscaped = true
+					hi = l.read()
+				}
+				if hi == eof {
+					l.error("unexpected end of input")
+					return
+				}
+				if !hiEscaped && IsSpecial(hi) {
+					l.errorf("unexpected special character %c in character class", hi)
+					return
+				}
+
+				if len(chars) > 0 {
+					l.tokens.push(Token{Text, string(chars)})
+					chars = chars[:0]
+				}
+
+				l.tokens.push(Token{RangeLow, string(r)})
+				l.tokens.push(Token{RangeBetween, string(sep)})
+				l.tokens.push(Token{RangeHigh, string(hi)})
 				continue
 			}
-			// not a range; rewind to the escape and let fetchText handle it
-			// as part of a character list
-			l.unRead()
-			l.readText([]rune{charRangeClose})
-			wantClose = true
-			continue
 		}
 
-		if n, w := l.peek(); n == charRangeBetween {
-			l.seek(w)
-			l.tokens.push(Token{RangeLo, string(r)})
-			l.tokens.push(Token{RangeBetween, string(n)})
-			wantHi = true
-			continue
-		}
-
-		l.unRead() // unread first peek and fetch as text
-		l.readText([]rune{charRangeClose})
-		wantClose = true
+		chars = append(chars, r)
 	}
 }
 

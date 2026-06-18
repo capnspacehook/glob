@@ -14,11 +14,11 @@ const (
 	Single
 	Not
 	Separator
-	RangeOpen
-	RangeClose
-	RangeLo
-	RangeHi
+	ListOpen
+	ListClose
+	RangeLow
 	RangeBetween
+	RangeHigh
 	TermsOpen
 	TermsClose
 )
@@ -52,17 +52,17 @@ func (tt TokenType) String() string {
 	case Separator:
 		return "separator"
 
-	case RangeOpen:
-		return "range_open"
+	case ListOpen:
+		return "list_open"
 
-	case RangeClose:
-		return "range_close"
+	case ListClose:
+		return "list_close"
 
-	case RangeLo:
-		return "range_lo"
+	case RangeLow:
+		return "range_low"
 
-	case RangeHi:
-		return "range_hi"
+	case RangeHigh:
+		return "range_high"
 
 	case RangeBetween:
 		return "range_between"
