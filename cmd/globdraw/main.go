@@ -24,7 +24,7 @@ func main() {
 
 	var separators []rune
 	if len(*sep) > 0 {
-		for _, c := range strings.Split(*sep, ",") {
+		for c := range strings.SplitSeq(*sep, ",") {
 			if r, w := utf8.DecodeRuneInString(c); len(c) > w {
 				fmt.Println("only single charactered separators are allowed")
 				os.Exit(1)

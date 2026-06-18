@@ -144,7 +144,7 @@ func (l *lexer) error(f string) {
 	l.err = errors.New(f)
 }
 
-func (l *lexer) errorf(f string, args ...interface{}) {
+func (l *lexer) errorf(f string, args ...any) {
 	l.err = fmt.Errorf(f, args...)
 }
 

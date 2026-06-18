@@ -50,16 +50,17 @@ func assertToken(t *rapid.T, tok Token, expType TokenType, expRaw string) {
 }
 
 func quoteStr(s string, toQuote []rune) string {
-	var quoted string
+	var quoted strings.Builder
 	for _, r := range s {
 		if slices.Contains(toQuote, r) {
-			quoted += `\` + string(r)
+			quoted.WriteByte('\\')
+			quoted.WriteRune(r)
 			continue
 		}
-		quoted += string(r)
+		quoted.WriteString(string(r))
 	}
 
-	return quoted
+	return quoted.String()
 }
 
 func TestLexerTerms(t *testing.T) {

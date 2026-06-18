@@ -8,7 +8,7 @@ import (
 func benchPool(b *testing.B, i int) {
 	b.Helper()
 
-	pool := sync.Pool{New: func() interface{} {
+	pool := sync.Pool{New: func() any {
 		return make([]int, 0, i)
 	}}
 

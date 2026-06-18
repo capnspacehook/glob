@@ -1,5 +1,7 @@
 package runes
 
+import "slices"
+
 func Index(s, needle []rune) int {
 	ls, ln := len(s), len(needle)
 
@@ -70,10 +72,8 @@ head:
 func IndexAny(s, chars []rune) int {
 	if len(chars) > 0 {
 		for i, c := range s {
-			for _, m := range chars {
-				if c == m {
-					return i
-				}
+			if slices.Contains(chars, c) {
+				return i
 			}
 		}
 	}

@@ -8,19 +8,18 @@ const (
 	EOF TokenType = iota
 	Error
 	Text
-	Char
-	Any
-	Super
-	Single
-	Not
-	Separator
-	ListOpen
-	ListClose
+	Any       // *
+	Super     // **
+	Single    // ?
+	Not       // !
+	Separator // ,
+	ListOpen  // [
+	ListClose // ]
 	RangeLow
-	RangeBetween
+	RangeBetween // -
 	RangeHigh
-	TermsOpen
-	TermsClose
+	TermsOpen  // {
+	TermsClose // }
 )
 
 func (tt TokenType) String() string {
@@ -33,9 +32,6 @@ func (tt TokenType) String() string {
 
 	case Text:
 		return "text"
-
-	case Char:
-		return "char"
 
 	case Any:
 		return "any"
