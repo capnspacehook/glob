@@ -68,14 +68,17 @@ func Insert(parent *Node, children ...*Node) {
 	}
 }
 
+type CharClass struct {
+	Not bool
+}
+
 type List struct {
-	Not   bool
 	Chars string
 }
 
 type Range struct {
-	Not    bool
-	Lo, Hi rune
+	Low  rune
+	High rune
 }
 
 type Text struct {
@@ -87,6 +90,7 @@ type Kind int
 const (
 	KindNothing Kind = iota
 	KindPattern
+	KindCharClass
 	KindList
 	KindRange
 	KindText
@@ -102,6 +106,8 @@ func (k Kind) String() string {
 		return "Nothing"
 	case KindPattern:
 		return "Pattern"
+	case KindCharClass:
+		return "CharClass"
 	case KindList:
 		return "List"
 	case KindRange:

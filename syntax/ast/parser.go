@@ -59,8 +59,11 @@ func parserMain(tree *Node, lex Lexer) (parseFn, *Node, error) {
 			Insert(tree, NewNode(KindSingle, nil))
 			return parserMain, tree, nil
 
-		case lexer.ListOpen:
-			return parserRange, tree, nil
+		case lexer.CharClassOpen:
+			c := NewNode(KindCharClass, CharClass{})
+			Insert(tree, c)
+
+			return parserRange, c, nil
 
 		case lexer.TermsOpen:
 			a := NewNode(KindAnyOf, nil)
@@ -88,11 +91,11 @@ func parserMain(tree *Node, lex Lexer) (parseFn, *Node, error) {
 
 func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 	var (
-		not   bool
-		lo    rune
-		hi    rune
-		chars string
+		chars    string
+		ranges   []Range
+		curRange Range
 	)
+
 	for {
 		token := lex.Next()
 		switch token.Type {
@@ -103,55 +106,47 @@ func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 			return nil, tree, errors.New(token.Raw)
 
 		case lexer.Not:
-			not = true
+			c, ok := tree.Value.(CharClass)
+			if !ok {
+				return nil, tree, fmt.Errorf("unexpected type for character class node: %T", tree.Value)
+			}
+			c.Not = true
+			tree.Value = c
 
 		case lexer.RangeLow:
 			r, w := utf8.DecodeRuneInString(token.Raw)
 			if len(token.Raw) > w {
-				return nil, tree, errors.New("unexpected length of lo character")
+				return nil, tree, errors.New("unexpected length of low character")
 			}
-			lo = r
-
-		case lexer.RangeBetween:
-			//
+			curRange.Low = r
 
 		case lexer.RangeHigh:
 			r, w := utf8.DecodeRuneInString(token.Raw)
 			if len(token.Raw) > w {
-				return nil, tree, errors.New("unexpected length of lo character")
+				return nil, tree, errors.New("unexpected length of high character")
 			}
 
-			hi = r
-
-			if hi < lo {
-				return nil, tree, fmt.Errorf("hi character '%s' should be greater than lo '%s'", string(hi), string(lo))
+			if r < curRange.Low {
+				return nil, tree, fmt.Errorf("high character %s must be greater than low %s", string(r), string(curRange.Low))
 			}
+			curRange.High = r
+			ranges = append(ranges, curRange)
 
 		case lexer.Text:
-			chars = token.Raw
+			chars += token.Raw
 
-		case lexer.ListClose:
-			isRange := lo != 0 && hi != 0
-			isChars := chars != ""
-
-			if isChars == isRange {
-				return nil, tree, errors.New("could not parse range")
+		case lexer.CharClassClose:
+			for _, r := range ranges {
+				Insert(tree, NewNode(KindRange, r))
 			}
 
-			if isRange {
-				Insert(tree, NewNode(KindRange, Range{
-					Lo:  lo,
-					Hi:  hi,
-					Not: not,
-				}))
-			} else {
+			if len(chars) > 0 {
 				Insert(tree, NewNode(KindList, List{
 					Chars: chars,
-					Not:   not,
 				}))
 			}
 
-			return parserMain, tree, nil
+			return parserMain, tree.Parent, nil
 		}
 	}
 }

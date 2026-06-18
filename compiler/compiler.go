@@ -502,7 +502,7 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 
 	case ast.KindRange:
 		r := tree.Value.(ast.Range)
-		m = match.NewRange(r.Lo, r.Hi, r.Not)
+		m = match.NewRange(r.Low, r.High, r.Not)
 
 	case ast.KindText:
 		t := tree.Value.(ast.Text)

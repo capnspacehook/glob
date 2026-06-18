@@ -14,8 +14,8 @@ const (
 	charComma        = ','
 	charSingle       = '?'
 	charEscape       = '\\'
-	charListOpen     = '['
-	charListClose    = ']'
+	charClassOpen    = '['
+	charClassClose   = ']'
 	charTermsOpen    = '{'
 	charTermsClose   = '}'
 	charListNot      = '!'
@@ -27,13 +27,13 @@ var (
 		charAny,
 		charSingle,
 		charEscape,
-		charListOpen,
-		charListClose,
+		charClassOpen,
+		charClassClose,
 		charTermsOpen,
 		charTermsClose,
 	}
 
-	inTextBreakers  = []rune{charSingle, charAny, charListOpen, charTermsOpen}
+	inTextBreakers  = []rune{charSingle, charAny, charClassOpen, charTermsOpen}
 	inTermsBreakers = append(inTextBreakers, charTermsClose, charComma)
 )
 
@@ -173,10 +173,10 @@ func (l *lexer) readItem() {
 	case r == charTermsClose && l.inTerms():
 		l.tokens.push(Token{TermsClose, string(r)})
 		l.termsLeave()
-	case r == charListOpen:
-		l.tokens.push(Token{ListOpen, string(r)})
-		l.readList()
-	case r == charListClose:
+	case r == charClassOpen:
+		l.tokens.push(Token{CharClassOpen, string(r)})
+		l.readCharClass()
+	case r == charClassClose:
 		l.error("unexpected list close")
 	case r == charSingle:
 		l.tokens.push(Token{Single, string(r)})
@@ -200,7 +200,7 @@ func (l *lexer) readItem() {
 	}
 }
 
-func (l *lexer) readList() {
+func (l *lexer) readCharClass() {
 	var (
 		chars []rune
 		first = true
@@ -213,11 +213,11 @@ func (l *lexer) readList() {
 			return
 		}
 
-		if r == charListClose {
+		if r == charClassClose {
 			if len(chars) > 0 {
 				l.tokens.push(Token{Text, string(chars)})
 			}
-			l.tokens.push(Token{ListClose, string(r)})
+			l.tokens.push(Token{CharClassClose, string(r)})
 			return
 		}
 
@@ -246,7 +246,7 @@ func (l *lexer) readList() {
 
 		if sep, sepWidth := l.peek(); sep == charRangeBetween {
 			peekHi, _ := l.peekAt(l.pos + sepWidth)
-			if peekHi != eof && peekHi != charListClose {
+			if peekHi != eof && peekHi != charClassClose {
 				l.seek(sepWidth)
 				hi := l.read()
 
@@ -270,7 +270,6 @@ func (l *lexer) readList() {
 				}
 
 				l.tokens.push(Token{RangeLow, string(r)})
-				l.tokens.push(Token{RangeBetween, string(sep)})
 				l.tokens.push(Token{RangeHigh, string(hi)})
 				continue
 			}

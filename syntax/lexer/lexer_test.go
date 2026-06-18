@@ -78,7 +78,7 @@ func TestLexerTerms(t *testing.T) {
 		tok := l.Next()
 
 		if isRange {
-			assertToken(t, tok, ListOpen, string(charListOpen))
+			assertToken(t, tok, CharClassOpen, string(charClassOpen))
 		} else {
 			assertToken(t, tok, TermsOpen, string(charTermsOpen))
 		}
@@ -93,7 +93,7 @@ func TestLexerTerms(t *testing.T) {
 		}
 
 		if isRange {
-			assertToken(t, lastTok, ListClose, string(charListClose))
+			assertToken(t, lastTok, CharClassClose, string(charClassClose))
 		} else {
 			assertToken(t, lastTok, TermsClose, string(charTermsClose))
 		}
@@ -102,8 +102,8 @@ func TestLexerTerms(t *testing.T) {
 
 var (
 	termRunes = []rune{
-		charListOpen,
-		charListClose,
+		charClassOpen,
+		charClassClose,
 		charTermsOpen,
 		charTermsClose,
 		charEscape,
@@ -189,12 +189,11 @@ func testLexerLists(t *rapid.T) {
 		t.Logf("input=%s", input)
 
 		var (
-			listOpens     int
-			listNots      int
-			rangeLows     int
-			rangeBetweens int
-			rangeHighs    int
-			listCloses    int
+			listOpens  int
+			listNots   int
+			rangeLows  int
+			rangeHighs int
+			listCloses int
 		)
 		l := NewLexer(input)
 		for {
@@ -206,17 +205,15 @@ func testLexerLists(t *rapid.T) {
 			switch tok.Type {
 			case Error:
 				t.Fatalf("unexpected error: %s", tok.Raw)
-			case ListOpen:
+			case CharClassOpen:
 				listOpens++
 			case Not:
 				listNots++
 			case RangeLow:
 				rangeLows++
-			case RangeBetween:
-				rangeBetweens++
 			case RangeHigh:
 				rangeHighs++
-			case ListClose:
+			case CharClassClose:
 				listCloses++
 			}
 
@@ -231,9 +228,6 @@ func testLexerLists(t *rapid.T) {
 		}
 		if rangeLows != numRanges {
 			t.Errorf("expected %d range lows, got %d", numRanges, rangeLows)
-		}
-		if rangeBetweens != numRanges {
-			t.Errorf("expected %d range betweens, got %d", numRanges, rangeBetweens)
 		}
 		if rangeHighs != numRanges {
 			t.Errorf("expected %d range highs, got %d", numRanges, rangeHighs)
@@ -263,17 +257,16 @@ func TestLexer(t *testing.T) {
 			},
 		},
 		{
-			pattern: "/{rate,[0-9]]}*",
+			pattern: `/{rate,[0-9]\]}*`,
 			items: []Token{
 				{Text, "/"},
 				{TermsOpen, "{"},
 				{Text, "rate"},
 				{Separator, ","},
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "0"},
-				{RangeBetween, "-"},
 				{RangeHigh, "9"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{Text, "]"},
 				{TermsClose, "}"},
 				{Any, "*"},
@@ -328,42 +321,40 @@ func TestLexer(t *testing.T) {
 		{
 			pattern: "[日-語]",
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "日"},
-				{RangeBetween, "-"},
 				{RangeHigh, "語"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: "[!日-語]",
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Not, "!"},
 				{RangeLow, "日"},
-				{RangeBetween, "-"},
 				{RangeHigh, "語"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: "[日本語]",
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Text, "日本語"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: "[!日本語]",
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Not, "!"},
 				{Text, "日本語"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -373,11 +364,10 @@ func TestLexer(t *testing.T) {
 			// not the character list {b, -, a}.
 			pattern: `[\b-\a]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "b"},
-				{RangeBetween, "-"},
 				{RangeHigh, "a"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -385,11 +375,10 @@ func TestLexer(t *testing.T) {
 			// An escaped hi bound, e.g. a special character.
 			pattern: `[a-\]]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "a"},
-				{RangeBetween, "-"},
 				{RangeHigh, "]"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -397,9 +386,9 @@ func TestLexer(t *testing.T) {
 			// An escaped char not followed by '-' is still a character list.
 			pattern: `[\*abc]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Text, "*abc"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -431,12 +420,11 @@ func TestLexer(t *testing.T) {
 			pattern: "{[!日-語],*,?,{a,b,\\c}}",
 			items: []Token{
 				{TermsOpen, "{"},
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Not, "!"},
 				{RangeLow, "日"},
-				{RangeBetween, "-"},
 				{RangeHigh, "語"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{Separator, ","},
 				{Any, "*"},
 				{Separator, ","},
@@ -456,62 +444,56 @@ func TestLexer(t *testing.T) {
 		{
 			pattern: `[\--\-]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "-"},
-				{RangeBetween, "-"},
 				{RangeHigh, "-"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: `[\*a-z]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Text, "*"},
 				{RangeLow, "a"},
-				{RangeBetween, "-"},
 				{RangeHigh, "z"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: `[a-z\*]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "a"},
-				{RangeBetween, "-"},
 				{RangeHigh, "z"},
 				{Text, "*"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: `[\?a-z\*]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Text, "?"},
 				{RangeLow, "a"},
-				{RangeBetween, "-"},
 				{RangeHigh, "z"},
 				{Text, "*"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: `[a-zA-Z]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{RangeLow, "a"},
-				{RangeBetween, "-"},
 				{RangeHigh, "z"},
 				{RangeLow, "A"},
-				{RangeBetween, "-"},
 				{RangeHigh, "Z"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
@@ -519,13 +501,12 @@ func TestLexer(t *testing.T) {
 			pattern: `ab[\?a-z\*]cd`,
 			items: []Token{
 				{Text, "ab"},
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Text, "?"},
 				{RangeLow, "a"},
-				{RangeBetween, "-"},
 				{RangeHigh, "z"},
 				{Text, "*"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{Text, "cd"},
 				{EOF, ""},
 			},
@@ -533,19 +514,19 @@ func TestLexer(t *testing.T) {
 		{
 			pattern: `[!a]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Not, "!"},
 				{Text, "a"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},
 		{
 			pattern: `[\!a]`,
 			items: []Token{
-				{ListOpen, "["},
+				{CharClassOpen, "["},
 				{Text, "!a"},
-				{ListClose, "]"},
+				{CharClassClose, "]"},
 				{EOF, ""},
 			},
 		},

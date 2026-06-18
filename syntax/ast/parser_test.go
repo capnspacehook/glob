@@ -22,7 +22,7 @@ func (s *stubLexer) Next() (ret lexer.Token) {
 }
 
 func TestParseString(t *testing.T) {
-	for id, test := range []struct {
+	tests := []struct {
 		tokens []lexer.Token
 		tree   *Node
 	}{
@@ -85,30 +85,43 @@ func TestParseString(t *testing.T) {
 		{
 			// pattern: "[!a-z]",
 			tokens: []lexer.Token{
-				{Type: lexer.ListOpen, Raw: "["},
+				{Type: lexer.CharClassOpen, Raw: "["},
 				{Type: lexer.Not, Raw: "!"},
 				{Type: lexer.RangeLow, Raw: "a"},
-				{Type: lexer.RangeBetween, Raw: "-"},
 				{Type: lexer.RangeHigh, Raw: "z"},
-				{Type: lexer.ListClose, Raw: "]"},
+				{Type: lexer.CharClassClose, Raw: "]"},
 				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
-				NewNode(KindRange, Range{Lo: 'a', Hi: 'z', Not: true}),
+				NewNode(
+					KindCharClass,
+					CharClass{Not: true},
+					NewNode(
+						KindRange,
+						Range{Low: 'a', High: 'z'},
+					),
+				),
 			),
 		},
 		{
 			// pattern: "[az]",
 			tokens: []lexer.Token{
-				{Type: lexer.ListOpen, Raw: "["},
+				{Type: lexer.CharClassOpen, Raw: "["},
 				{Type: lexer.Text, Raw: "az"},
-				{Type: lexer.ListClose, Raw: "]"},
+				{Type: lexer.CharClassClose, Raw: "]"},
 				{Type: lexer.EOF, Raw: ""},
 			},
 			tree: NewNode(
 				KindPattern, nil,
-				NewNode(KindList, List{Chars: "az"}),
+				NewNode(
+					KindCharClass,
+					CharClass{Not: false},
+					NewNode(
+						KindList,
+						List{Chars: "az"},
+					),
+				),
 			),
 		},
 		{
@@ -179,16 +192,15 @@ func TestParseString(t *testing.T) {
 				{Type: lexer.Separator, Raw: ","},
 				{Type: lexer.Single, Raw: "?"},
 				{Type: lexer.Separator, Raw: ","},
-				{Type: lexer.ListOpen, Raw: "["},
+				{Type: lexer.CharClassOpen, Raw: "["},
 				{Type: lexer.RangeLow, Raw: "a"},
-				{Type: lexer.RangeBetween, Raw: "-"},
 				{Type: lexer.RangeHigh, Raw: "z"},
-				{Type: lexer.ListClose, Raw: "]"},
+				{Type: lexer.CharClassClose, Raw: "]"},
 				{Type: lexer.Separator, Raw: ","},
-				{Type: lexer.ListOpen, Raw: "["},
+				{Type: lexer.CharClassOpen, Raw: "["},
 				{Type: lexer.Not, Raw: "!"},
 				{Type: lexer.Text, Raw: "qwe"},
-				{Type: lexer.ListClose, Raw: "]"},
+				{Type: lexer.CharClassClose, Raw: "]"},
 				{Type: lexer.TermsClose, Raw: "}"},
 				{Type: lexer.EOF, Raw: ""},
 			},
@@ -220,23 +232,41 @@ func TestParseString(t *testing.T) {
 					),
 					NewNode(
 						KindPattern, nil,
-						NewNode(KindRange, Range{Lo: 'a', Hi: 'z', Not: false}),
+						NewNode(
+							KindCharClass,
+							CharClass{Not: false},
+							NewNode(
+								KindRange,
+								Range{Low: 'a', High: 'z'},
+							),
+						),
 					),
 					NewNode(
 						KindPattern, nil,
-						NewNode(KindList, List{Chars: "qwe", Not: true}),
+						NewNode(
+							KindCharClass,
+							CharClass{Not: true},
+							NewNode(
+								KindList,
+								List{Chars: "qwe"},
+							),
+						),
 					),
 				),
 			),
 		},
-	} {
-		lexer := &stubLexer{tokens: test.tokens}
-		result, err := Parse(lexer)
-		if err != nil {
-			t.Errorf("[%d] unexpected error: %s", id, err)
-		}
-		if !reflect.DeepEqual(test.tree, result) {
-			t.Errorf("[%d] Parse():\nact:\t%s\nexp:\t%s\n", id, result, test.tree)
-		}
+	}
+
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			lexer := &stubLexer{tokens: tt.tokens}
+			result, err := Parse(lexer)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+			}
+			if !reflect.DeepEqual(tt.tree, result) {
+				t.Errorf("Parse():\nwant:\t%s\ngot: \t%s\n", tt.tree, result)
+			}
+		})
 	}
 }

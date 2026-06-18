@@ -371,9 +371,9 @@ func TestCompiler(t *testing.T) {
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
 				ast.NewNode(ast.KindRange, ast.Range{
-					Lo:  'a',
-					Hi:  'z',
-					Not: true,
+					Low:  'a',
+					High: 'z',
+					Not:  true,
 				}),
 			),
 			result: match.NewRange('a', 'z', true),
@@ -609,8 +609,8 @@ func TestCompiler(t *testing.T) {
 		{
 			ast: ast.NewNode(
 				ast.KindPattern, nil,
-				ast.NewNode(ast.KindRange, ast.Range{Lo: 'a', Hi: 'z'}),
-				ast.NewNode(ast.KindRange, ast.Range{Lo: 'a', Hi: 'x', Not: true}),
+				ast.NewNode(ast.KindRange, ast.Range{Low: 'a', High: 'z'}),
+				ast.NewNode(ast.KindRange, ast.Range{Low: 'a', High: 'x', Not: true}),
 				ast.NewNode(ast.KindAny, nil),
 			),
 			result: match.NewBTree(

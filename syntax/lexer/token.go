@@ -8,15 +8,14 @@ const (
 	EOF TokenType = iota
 	Error
 	Text
-	Any       // *
-	Super     // **
-	Single    // ?
-	Not       // !
-	Separator // ,
-	ListOpen  // [
-	ListClose // ]
+	Any            // *
+	Super          // **
+	Single         // ?
+	Not            // !
+	Separator      // ,
+	CharClassOpen  // [
+	CharClassClose // ]
 	RangeLow
-	RangeBetween // -
 	RangeHigh
 	TermsOpen  // {
 	TermsClose // }
@@ -48,20 +47,17 @@ func (tt TokenType) String() string {
 	case Separator:
 		return "separator"
 
-	case ListOpen:
-		return "list_open"
+	case CharClassOpen:
+		return "char_class_open"
 
-	case ListClose:
-		return "list_close"
+	case CharClassClose:
+		return "char_class_close"
 
 	case RangeLow:
 		return "range_low"
 
 	case RangeHigh:
 		return "range_high"
-
-	case RangeBetween:
-		return "range_between"
 
 	case TermsOpen:
 		return "terms_open"
