@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	pattern_all          = "[a-z][!a-x]*cat*[h][!b]*eyes*"
-	regexp_all           = `^[a-z][^a-x].*cat.*[h][^b].*eyes.*$`
+	pattern_all          = "[Aa-z][!a-x]*cat*[h][!b]*eyes*"
+	regexp_all           = `^[Aa-z][^a-x].*cat.*[h][^b].*eyes.*$`
 	fixture_all_match    = "my cat has very bright eyes"
 	fixture_all_mismatch = "my dog has very bright eyes"
 

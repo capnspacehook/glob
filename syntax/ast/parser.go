@@ -136,14 +136,13 @@ func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 			chars += token.Raw
 
 		case lexer.CharClassClose:
-			for _, r := range ranges {
-				Insert(tree, NewNode(KindRange, r))
-			}
-
 			if len(chars) > 0 {
 				Insert(tree, NewNode(KindList, List{
 					Chars: chars,
 				}))
+			}
+			for _, r := range ranges {
+				Insert(tree, NewNode(KindRange, r))
 			}
 
 			return parserMain, tree.Parent, nil

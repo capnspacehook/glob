@@ -399,6 +399,25 @@ func TestCompiler(t *testing.T) {
 		},
 		{
 			ast: ast.NewNode(
+				ast.KindPattern,
+				nil,
+				ast.NewNode(
+					ast.KindCharClass,
+					ast.CharClass{Not: true},
+					ast.NewNode(
+						ast.KindList,
+						ast.List{Chars: "abc"},
+					),
+					ast.NewNode(
+						ast.KindRange,
+						ast.Range{Low: 'a', High: 'z'},
+					),
+				),
+			),
+			result: match.NewCharClass(true, []rune("abc"), []match.CharRange{{Low: 'a', High: 'z'}}),
+		},
+		{
+			ast: ast.NewNode(
 				ast.KindPattern, nil,
 				ast.NewNode(ast.KindAny, nil),
 				ast.NewNode(ast.KindSingle, nil),

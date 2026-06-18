@@ -14,9 +14,9 @@ const sep = '/'
 
 var (
 	// classMembers never include the separator (see the header note on classes).
-	classMembers = []byte{'a', 'b', 'c', 'd'}
+	classMembers = []rune{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}
 
-	tokens []byte = []byte{'*', '?', '[', ']', '{', '}', '-', '\\'}
+	tokens = []rune{'*', '?', '[', ']', '{', '}', '-', '\\'}
 	// alphabet is used for literal pattern characters and target characters. It
 	// is intentionally small (so matches actually happen) and includes '/'.
 	alphabet = append(classMembers, '/')
@@ -26,7 +26,7 @@ var (
 	memberGen  = rapid.SampledFrom(classMembers)
 
 	// targetGen draws a 0..11 char string over the alphabet, separator included.
-	targetGen = rapid.StringOfN(rapid.SampledFrom([]rune{'a', 'b', 'c', 'd', '/'}), 1, 16, -1)
+	targetGen = rapid.StringOfN(rapid.SampledFrom(append(classMembers, '/')), 1, 16, -1)
 
 	// patternGen draws a pattern in the gobwas/doublestar common subset.
 	patternGen = rapid.Custom(genPattern)
@@ -83,14 +83,14 @@ func genPattern(t *rapid.T) string {
 
 			switch rapid.IntRange(0, maxChoice).Draw(t, "choice") {
 			case 0, 1, 2, 3: // literal (weighted so matches actually happen)
-				sb.WriteByte(literalGen.Draw(t, "literal"))
+				sb.WriteRune(literalGen.Draw(t, "literal"))
 				lastStar = notLastStar()
 			case 4:
 				sb.WriteByte('\\')
-				sb.WriteByte(tokenGen.Draw(t, "escapedLiteral"))
+				sb.WriteRune(tokenGen.Draw(t, "escapedLiteral"))
 			case 5: // single '*', never adjacent to another '*'
 				if lastStar {
-					sb.WriteByte(literalGen.Draw(t, "literal"))
+					sb.WriteRune(literalGen.Draw(t, "literal"))
 					lastStar = notLastStar()
 				} else {
 					sb.WriteByte('*')
@@ -100,7 +100,7 @@ func genPattern(t *rapid.T) string {
 				sb.WriteByte('?')
 				lastStar = notLastStar()
 			case 7: // list '[ ]'
-				listLen := rapid.IntRange(0, 4).Draw(t, "listLen")
+				listLen := rapid.IntRange(1, 4).Draw(t, "listLen")
 				sb.WriteByte('[')
 				// negate 50% of the time
 				// var negated bool
@@ -113,12 +113,15 @@ func genPattern(t *rapid.T) string {
 				for range listLen {
 					// range 33% of the time
 					if rapid.IntRange(0, 2).Draw(t, "isRange") == 0 {
-						// don't use an escaped token as the low end of the
-						// range as it could cause '/' to be included in the
-						// range which doublestar doesn't always handle correctly
-						sb.WriteString(genChar(t, false))
+						low := memberGen.Filter(func(r rune) bool {
+							return r != classMembers[len(classMembers)-1]
+						}).Draw(t, "low")
+						sb.WriteRune(low)
 						sb.WriteByte('-')
-						sb.WriteString(genChar(t, true))
+						high := memberGen.Filter(func(r rune) bool {
+							return r > low
+						}).Draw(t, "high")
+						sb.WriteRune(high)
 					} else {
 						sb.WriteString(genChar(t, true))
 					}
@@ -169,13 +172,13 @@ func compareGlobs(t *rapid.T) {
 
 	g, err := Compile(pattern, sep)
 	if err != nil {
-		return
+		t.Fatalf("compile error: %v", err)
 	}
 
 	gm := g.Match(target)
 	dm, err := doublestar.Match(pattern, target)
 	if err != nil {
-		return
+		t.Fatalf("glob accepted what doublestar did not: %v", err)
 	}
 
 	if gm != dm {
