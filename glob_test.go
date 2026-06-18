@@ -161,7 +161,7 @@ var tests = []test{
 
 func TestGlob(t *testing.T) {
 	for _, test := range tests {
-		t.Run("", func(t *testing.T) {
+		t.Run(test.pattern, func(t *testing.T) {
 			g := MustCompile(test.pattern, test.delimiters...)
 			result := g.Match(test.match)
 			if result != test.should {

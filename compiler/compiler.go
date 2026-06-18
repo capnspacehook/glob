@@ -5,6 +5,7 @@ package compiler
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/gobwas/glob/match"
@@ -27,8 +28,8 @@ func optimizeMatcher(matcher match.Matcher) match.Matcher {
 
 		return m
 
-	case match.List:
-		if !m.Not && len(m.List) == 1 {
+	case match.CharClass:
+		if !m.Not && len(m.List) == 1 && len(m.Ranges) == 0 {
 			return match.NewText(string(m.List))
 		}
 
@@ -90,7 +91,7 @@ func optimizeMatcher(matcher match.Matcher) match.Matcher {
 
 func compileMatchers(matchers []match.Matcher) (match.Matcher, error) {
 	if len(matchers) == 0 {
-		return nil, errors.New("compile error: need at least one matcher")
+		return nil, errors.New("need at least one matcher")
 	}
 	if len(matchers) == 1 {
 		return matchers[0], nil
@@ -203,8 +204,8 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 			hasSingle = true
 			min++
 
-		case match.List:
-			if !m.Not {
+		case match.CharClass:
+			if !m.Not || len(m.Ranges) > 0 {
 				return nil
 			}
 			sep = m.List
@@ -496,20 +497,41 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 	case ast.KindNothing:
 		m = match.NewNothing()
 
-	case ast.KindList:
-		l := tree.Value.(ast.List)
-		m = match.NewList([]rune(l.Chars), l.Not)
+	case ast.KindCharClass:
+		c := tree.Value.(ast.CharClass)
+		if len(tree.Children) == 0 {
+			return nil, errors.New("empty character class")
+		}
 
-	case ast.KindRange:
-		r := tree.Value.(ast.Range)
-		m = match.NewRange(r.Low, r.High, r.Not)
+		var charList []rune
+		childNodes := tree.Children
+		firstChildList := tree.Children[0].Kind == ast.KindList
+		if firstChildList {
+			charList = []rune(tree.Children[0].Value.(ast.List).Chars)
+			childNodes = childNodes[1:]
+		}
+
+		var ranges []match.CharRange
+		ranges = make([]match.CharRange, 0, len(childNodes))
+		for _, child := range childNodes {
+			if child.Kind != ast.KindRange {
+				return nil, fmt.Errorf("expected Range node, got %s", child.Kind)
+			}
+			r := child.Value.(ast.Range)
+			ranges = append(ranges, match.CharRange{
+				Low:  r.Low,
+				High: r.High,
+			})
+		}
+
+		m = match.NewCharClass(c.Not, charList, ranges)
 
 	case ast.KindText:
 		t := tree.Value.(ast.Text)
 		m = match.NewText(t.Text)
 
 	default:
-		return nil, errors.New("could not compile tree: unknown node type")
+		return nil, errors.New("unknown node type")
 	}
 
 	return optimizeMatcher(m), nil
@@ -518,7 +540,7 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 func Compile(tree *ast.Node, sep []rune) (match.Matcher, error) {
 	m, err := compile(tree, sep)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("compile: %w", err)
 	}
 
 	return m, nil
