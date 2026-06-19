@@ -23,7 +23,10 @@ type CharRange struct {
 // - optimize by combining ranges if they overlap
 // ex. [a-cb-d] can be simplified to [a-d]
 func NewCharClass(not bool, list []rune, ranges []CharRange) CharClass {
-	return CharClass{not, list, ranges}
+	slices.Sort(list)
+	deduped := slices.Compact(list)
+
+	return CharClass{not, deduped, ranges}
 }
 
 func (c CharClass) Match(s string) bool {

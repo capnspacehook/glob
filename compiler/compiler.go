@@ -205,9 +205,10 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 			min++
 
 		case match.CharClass:
-			if !m.Not || len(m.Ranges) > 0 {
+			if !m.Not || len(m.List) != 1 || len(m.Ranges) > 0 {
 				return nil
 			}
+
 			sep = m.List
 			hasSingle = true
 			min++

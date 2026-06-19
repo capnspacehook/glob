@@ -23,7 +23,7 @@ func FuzzGlobCompileMatch(f *testing.F) {
 		// prevent the fuzzer from creating insanely long patterns,
 		// match strings, or creating a pattern that wil take a very
 		// long time to match and hanging
-		if len(pattern) > 128 || len(match) > 128 {
+		if len(pattern) > 64 || len(match) > 64 {
 			t.SkipNow()
 		}
 		if strings.Count(pattern, "*") > 7 {

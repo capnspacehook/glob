@@ -25,11 +25,8 @@ var (
 	tokenGen   = rapid.SampledFrom(tokens)
 	memberGen  = rapid.SampledFrom(classMembers)
 
-	// targetGen draws a 0..11 char string over the alphabet, separator included.
-	targetGen = rapid.StringOfN(rapid.SampledFrom(append(classMembers, '/')), 1, 16, -1)
-
-	// patternGen draws a pattern in the gobwas/doublestar common subset.
-	patternGen = rapid.Custom(genPattern)
+	targetGen      = rapid.StringOfN(rapid.SampledFrom(append(classMembers, '/')), 1, 16, -1)
+	targetNoSepGen = rapid.StringOfN(rapid.SampledFrom(classMembers), 1, 16, -1)
 )
 
 func FuzzGlobVsDoublestar(f *testing.F) {
@@ -40,13 +37,11 @@ func TestGlobVsDoublestar(t *testing.T) {
 	rapid.Check(t, compareGlobs)
 }
 
-// genPattern builds a pattern from literals, '*' (never '**'), '?', positive
-// '[abc]' classes, and '{a,bc}' brace alternations. The lastStar guard keeps
-// two '*' tokens from ever landing adjacent.
-func genPattern(t *rapid.T) string {
+func getPattern(t *rapid.T) (string, bool) {
 	patternLen := rapid.IntRange(1, 16).Draw(t, "patternLen")
 	var sb strings.Builder
 	var lastStar bool
+	var negatedCharClass bool
 
 	var writePattern func(n int, inAnyOf bool, anyOfLen int)
 	writePattern = func(n int, inAnyOf bool, anyOfLen int) {
@@ -105,9 +100,8 @@ func genPattern(t *rapid.T) string {
 				listLen := rapid.IntRange(1, 4).Draw(t, "listLen")
 				sb.WriteByte('[')
 				// negate 50% of the time
-				// var negated bool
 				if !lastStar && rapid.Bool().Draw(t, "negated") {
-					// negated = true
+					negatedCharClass = true
 					sb.WriteByte('!')
 				}
 
@@ -151,7 +145,7 @@ func genPattern(t *rapid.T) string {
 
 	writePattern(patternLen, false, 0)
 
-	return sb.String()
+	return sb.String(), negatedCharClass
 }
 
 func genChar(t *rapid.T, tokenPossible bool) string {
@@ -168,8 +162,16 @@ func genChar(t *rapid.T, tokenPossible bool) string {
 }
 
 func compareGlobs(t *rapid.T) {
-	pattern := patternGen.Draw(t, "pattern")
-	target := targetGen.Draw(t, "target")
+	pattern, negatedCharClass := getPattern(t)
+
+	// avoid a separator in the target if the pattern has a negated character class
+	// doublestar doesn't handle this correctly
+	var target string
+	if negatedCharClass {
+		target = targetNoSepGen.Draw(t, "target")
+	} else {
+		target = targetGen.Draw(t, "target")
+	}
 
 	g, err := Compile(pattern, sep)
 	if err != nil {
