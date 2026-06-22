@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-var matchSink bool
-
 func FuzzGlobCompileMatch(f *testing.F) {
 	for _, tt := range tests {
 		var delimiterSet bool
@@ -43,6 +41,11 @@ func FuzzGlobCompileMatch(f *testing.F) {
 			t.SkipNow()
 		}
 
-		matchSink = g.Match(match)
+		matched1 := g.Match(match)
+		matched2 := g.Match(match)
+
+		if matched1 != matched2 {
+			t.Fatal("consecutive match disagreement")
+		}
 	})
 }

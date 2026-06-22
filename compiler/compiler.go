@@ -499,33 +499,10 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 		m = match.NewNothing()
 
 	case ast.KindCharClass:
-		c := tree.Value.(ast.CharClass)
-		if len(tree.Children) == 0 {
-			return nil, errors.New("empty character class")
+		m, err = compileCharClass(tree)
+		if err != nil {
+			return nil, err
 		}
-
-		var charList []rune
-		childNodes := tree.Children
-		firstChildList := tree.Children[0].Kind == ast.KindList
-		if firstChildList {
-			charList = []rune(tree.Children[0].Value.(ast.List).Chars)
-			childNodes = childNodes[1:]
-		}
-
-		var ranges []match.CharRange
-		ranges = make([]match.CharRange, 0, len(childNodes))
-		for _, child := range childNodes {
-			if child.Kind != ast.KindRange {
-				return nil, fmt.Errorf("expected Range node, got %s", child.Kind)
-			}
-			r := child.Value.(ast.Range)
-			ranges = append(ranges, match.CharRange{
-				Low:  r.Low,
-				High: r.High,
-			})
-		}
-
-		m = match.NewCharClass(c.Not, charList, ranges)
 
 	case ast.KindText:
 		t := tree.Value.(ast.Text)
@@ -536,6 +513,36 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 	}
 
 	return optimizeMatcher(m), nil
+}
+
+func compileCharClass(node *ast.Node) (match.Matcher, error) {
+	c := node.Value.(ast.CharClass)
+	if len(node.Children) == 0 {
+		return nil, errors.New("empty character class")
+	}
+
+	var charList []rune
+	childNodes := node.Children
+	firstChildList := node.Children[0].Kind == ast.KindList
+	if firstChildList {
+		charList = []rune(node.Children[0].Value.(ast.List).Chars)
+		childNodes = childNodes[1:]
+	}
+
+	var ranges []match.CharRange
+	ranges = make([]match.CharRange, 0, len(childNodes))
+	for _, child := range childNodes {
+		if child.Kind != ast.KindRange {
+			return nil, fmt.Errorf("expected Range node, got %s", child.Kind)
+		}
+		r := child.Value.(ast.Range)
+		ranges = append(ranges, match.CharRange{
+			Low:  r.Low,
+			High: r.High,
+		})
+	}
+
+	return match.NewCharClass(c.Not, charList, ranges), nil
 }
 
 func Compile(tree *ast.Node, sep []rune) (match.Matcher, error) {

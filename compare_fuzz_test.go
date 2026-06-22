@@ -29,14 +29,6 @@ var (
 	targetNoSepGen = rapid.StringOfN(rapid.SampledFrom(classMembers), 1, 16, -1)
 )
 
-func FuzzGlobVsDoublestar(f *testing.F) {
-	f.Fuzz(rapid.MakeFuzz(compareGlobs))
-}
-
-func TestGlobVsDoublestar(t *testing.T) {
-	rapid.Check(t, compareGlobs)
-}
-
 func getPattern(t *rapid.T) (string, bool) {
 	patternLen := rapid.IntRange(1, 16).Draw(t, "patternLen")
 	var sb strings.Builder
@@ -159,6 +151,14 @@ func genChar(t *rapid.T, tokenPossible bool) string {
 		return "\\" + literal
 	}
 	return literal
+}
+
+func TestGlobVsDoublestar(t *testing.T) {
+	rapid.Check(t, compareGlobs)
+}
+
+func FuzzGlobVsDoublestar(f *testing.F) {
+	f.Fuzz(rapid.MakeFuzz(compareGlobs))
 }
 
 func compareGlobs(t *rapid.T) {
