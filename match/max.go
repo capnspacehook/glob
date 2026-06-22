@@ -5,7 +5,7 @@ import (
 	"unicode/utf8"
 )
 
-// Min matches any string that has at most the given length; used for
+// Max matches any string that has at most the given length; used for
 // length upper-bounds in compiled patterns.
 type Max struct {
 	Limit int
@@ -31,12 +31,16 @@ func (self Max) Index(s string) (int, []int) {
 	segments := acquireSegments(self.Limit + 1)
 	segments = append(segments, 0)
 	var count int
-	for i, r := range s {
+	for i := range s {
 		count++
 		if count > self.Limit {
 			break
 		}
-		segments = append(segments, i+utf8.RuneLen(r))
+		// use the actual byte width consumed rather than utf8.RuneLen(r):
+		// for invalid UTF-8 bytes range yields utf8.RuneError (RuneLen 3)
+		// but only advances one byte.
+		_, w := utf8.DecodeRuneInString(s[i:])
+		segments = append(segments, i+w)
 	}
 
 	return 0, segments

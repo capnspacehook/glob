@@ -24,6 +24,15 @@ func TestSuffixIndex(t *testing.T) {
 			0,
 			[]int{5},
 		},
+		{
+			// '**a' matches at every occurrence of the suffix, so each one is
+			// a valid match length (separators included, since '**' crosses
+			// them).
+			"a",
+			"aba",
+			0,
+			[]int{1, 3},
+		},
 	} {
 		p := NewSuffix(test.prefix)
 		index, segments := p.Index(test.fixture)

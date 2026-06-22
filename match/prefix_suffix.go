@@ -38,6 +38,14 @@ func (self PrefixSuffix) Index(s string) (int, []int) {
 			break
 		}
 
+		// the suffix must not overlap the prefix, ex 'a**a' must not match
+		// "a". suffixIdx is relative to the prefix start, so a valid match
+		// needs suffixIdx >= len(prefix). suffixIdx only decreases from here,
+		// so no later iteration can satisfy this either.
+		if suffixIdx < len(self.Prefix) {
+			break
+		}
+
 		segments = append(segments, suffixIdx+suffixLen)
 		sub = sub[:suffixIdx]
 	}
@@ -57,7 +65,11 @@ func (self PrefixSuffix) Len() int {
 }
 
 func (self PrefixSuffix) Match(s string) bool {
-	return strings.HasPrefix(s, self.Prefix) && strings.HasSuffix(s, self.Suffix)
+	// the length check ensures the prefix and suffix do not overlap, so that
+	// ex 'a**a' does not match "a" (which would satisfy both HasPrefix and
+	// HasSuffix on the same single character).
+	return len(s) >= len(self.Prefix)+len(self.Suffix) &&
+		strings.HasPrefix(s, self.Prefix) && strings.HasSuffix(s, self.Suffix)
 }
 
 func (self PrefixSuffix) String() string {

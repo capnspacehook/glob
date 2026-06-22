@@ -31,8 +31,12 @@ func (self Prefix) Index(s string) (int, []int) {
 
 	segments := acquireSegments(len(sub) + 1)
 	segments = append(segments, length)
-	for i, r := range sub {
-		segments = append(segments, length+i+utf8.RuneLen(r))
+	for i := range sub {
+		// use the actual byte width consumed rather than utf8.RuneLen(r):
+		// for invalid UTF-8 bytes range yields utf8.RuneError (RuneLen 3)
+		// but only advances one byte.
+		_, w := utf8.DecodeRuneInString(sub[i:])
+		segments = append(segments, length+i+w)
 	}
 
 	return idx, segments

@@ -8,7 +8,7 @@ import (
 	sutil "github.com/gobwas/glob/util/strings"
 )
 
-// Prefix any matches a string with a given prefix that isn't followed
+// PrefixAny matches a string with a given prefix that isn't followed
 // by separators; ex 'abc*'.
 type PrefixAny struct {
 	Prefix     string
@@ -34,8 +34,12 @@ func (self PrefixAny) Index(s string) (int, []int) {
 
 	seg := acquireSegments(len(sub) + 1)
 	seg = append(seg, n)
-	for i, r := range sub {
-		seg = append(seg, n+i+utf8.RuneLen(r))
+	for i := range sub {
+		// use the actual byte width consumed rather than utf8.RuneLen(r):
+		// for invalid UTF-8 bytes range yields utf8.RuneError (RuneLen 3)
+		// but only advances one byte.
+		_, w := utf8.DecodeRuneInString(sub[i:])
+		seg = append(seg, n+i+w)
 	}
 
 	return idx, seg

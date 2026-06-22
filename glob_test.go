@@ -157,6 +157,22 @@ var tests = []test{
 
 	{should: true, pattern: pattern_prefix_suffix, match: fixture_prefix_suffix_match},
 	{should: false, pattern: pattern_prefix_suffix, match: fixture_prefix_suffix_mismatch},
+
+	// invalid UTF-8 in the target must not cause an over-long matched
+	// segment: an invalid byte advances one byte but decodes to
+	// utf8.RuneError (whose RuneLen is 3). "**?" requires the last
+	// character to be a non-separator, so a trailing separator must not
+	// match even when preceded by invalid bytes.
+	{should: false, pattern: "**?", match: "\xff/", delimiters: []rune{'/'}},
+	{should: false, pattern: "**?", match: "\xff\xff/", delimiters: []rune{'/'}},
+	{should: true, pattern: "**?", match: "\xffa", delimiters: []rune{'/'}},
+	{should: true, pattern: "**?", match: "\xff", delimiters: []rune{'/'}},
+
+	{should: false, pattern: "*[!a]", match: "\x80a", delimiters: []rune{'/'}},
+	{should: false, pattern: "a**a", match: "a"},
+	{should: false, pattern: "{??????????,é******é}***********", match: "é"},
+	{should: true, pattern: "{a,*c}??", match: "ccxx", delimiters: []rune{'/'}},
+	{should: true, pattern: "{?,**a}*", match: "a/a", delimiters: []rune{'/'}},
 }
 
 func TestGlob(t *testing.T) {

@@ -34,6 +34,24 @@ func TestSuffixAnyIndex(t *testing.T) {
 			3,
 			[]int{4},
 		},
+		{
+			// '*c' matches at every suffix occurrence within the
+			// non-separator run, so both "c" and "cc" are valid lengths.
+			"c",
+			[]rune{'/'},
+			"ccxx",
+			0,
+			[]int{1, 2},
+		},
+		{
+			// the suffix literal itself may contain separators, ex '*.x.';
+			// only the '*' part must be separator-free.
+			".x.",
+			[]rune{'.'},
+			"ab.x.c",
+			0,
+			[]int{5},
+		},
 	} {
 		p := NewSuffixAny(test.suffix, test.separators)
 		index, segments := p.Index(test.fixture)

@@ -36,10 +36,14 @@ func (self Min) Index(s string) (int, []int) {
 	}
 
 	segments := acquireSegments(c)
-	for i, r := range s {
+	for i := range s {
 		count++
 		if count >= self.Limit {
-			segments = append(segments, i+utf8.RuneLen(r))
+			// use the actual byte width consumed rather than
+			// utf8.RuneLen(r): for invalid UTF-8 bytes range yields
+			// utf8.RuneError (RuneLen 3) but only advances one byte.
+			_, w := utf8.DecodeRuneInString(s[i:])
+			segments = append(segments, i+w)
 		}
 	}
 

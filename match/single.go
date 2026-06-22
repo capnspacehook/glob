@@ -36,7 +36,11 @@ func (self Single) Len() int {
 func (self Single) Index(s string) (int, []int) {
 	for i, r := range s {
 		if runes.IndexRune(self.Separators, r) == -1 {
-			return i, segmentsByRuneLength[utf8.RuneLen(r)]
+			// use the actual byte width consumed rather than
+			// utf8.RuneLen(r): for invalid UTF-8 bytes range yields
+			// utf8.RuneError (RuneLen 3) but only advances one byte.
+			_, w := utf8.DecodeRuneInString(s[i:])
+			return i, segmentsByRuneLength[w]
 		}
 	}
 
