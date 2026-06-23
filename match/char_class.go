@@ -17,16 +17,64 @@ type CharRange struct {
 	High rune
 }
 
-// TODO:
-// - optimize by flattening ranges if they al have a size of 1
-// ex. [a-b0-1] can be flattened to [ab01]
-// - optimize by combining ranges if they overlap
-// ex. [a-cb-d] can be simplified to [a-d]
 func NewCharClass(not bool, list []rune, ranges []CharRange) CharClass {
 	slices.Sort(list)
 	deduped := slices.Compact(list)
 
-	return CharClass{not, deduped, ranges}
+	// optimize ranges by combining overlapping ranges
+	expandedRanges := ranges
+	for _, r := range ranges {
+		for i := range expandedRanges {
+			if r.High == expandedRanges[i].Low {
+				expandedRanges[i].Low = r.Low
+			} else if r.Low == expandedRanges[i].High {
+				expandedRanges[i].High = r.High
+			} else if r.Low < expandedRanges[i].Low && r.High == expandedRanges[i].High {
+				expandedRanges[i].Low = r.Low
+			} else if r.Low == expandedRanges[i].Low && r.High > expandedRanges[i].High {
+				expandedRanges[i].High = r.High
+			}
+		}
+	}
+
+	uniqueRanges := make([]CharRange, 0, len(expandedRanges))
+	for i := range expandedRanges {
+		for k, r := range expandedRanges {
+			if i == k {
+				continue
+			}
+
+			if containsRange(expandedRanges[i:], r) && !containsRange(uniqueRanges, r) {
+				uniqueRanges = append(uniqueRanges, r)
+				break
+			}
+		}
+	}
+
+	// only keep characters not in ranges
+	uniqueChars := make([]rune, 0, len(deduped))
+	for _, c := range deduped {
+		contained := false
+		for _, r := range expandedRanges {
+			if c >= r.Low && c <= r.High {
+				contained = true
+				break
+			}
+		}
+
+		if !contained {
+			uniqueChars = append(uniqueChars, c)
+		}
+	}
+	uniqueChars = slices.Clip(uniqueChars)
+
+	return CharClass{not, uniqueChars, expandedRanges}
+}
+
+func containsRange(ranges []CharRange, r CharRange) bool {
+	return slices.ContainsFunc(ranges, func(cr CharRange) bool {
+		return r.Low >= cr.Low && r.High <= cr.High
+	})
 }
 
 func (c CharClass) Match(s string) bool {
