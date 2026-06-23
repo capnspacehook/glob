@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"unicode/utf8"
 
-	"github.com/gobwas/glob/syntax/lexer"
+	"github.com/capnspacehook/glob/syntax/lexer"
 )
 
 type Lexer interface {

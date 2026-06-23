@@ -71,7 +71,7 @@ formatters:
       sections:
         - standard
         - default
-        - prefix(github.com/gobwas/glob)
+        - prefix(github.com/capnspacehook/glob)
   exclusions:
     generated: lax
     paths:

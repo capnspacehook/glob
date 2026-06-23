@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"unicode/utf8"
 
-	"github.com/gobwas/glob/util/runes"
+	"github.com/capnspacehook/glob/util/runes"
 )
 
 // Single matches any single non-separator character; '?'.

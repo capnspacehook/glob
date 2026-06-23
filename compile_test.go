@@ -8,9 +8,9 @@ import (
 
 	"pgregory.net/rapid"
 
-	"github.com/gobwas/glob/compiler"
-	"github.com/gobwas/glob/syntax"
-	"github.com/gobwas/glob/syntax/ast"
+	"github.com/capnspacehook/glob/compiler"
+	"github.com/capnspacehook/glob/syntax"
+	"github.com/capnspacehook/glob/syntax/ast"
 )
 
 func TestSimpleMatchSanity(t *testing.T) {
@@ -172,7 +172,8 @@ func genPattern(t *rapid.T) string {
 }
 
 func writePattern(t *rapid.T, sb *strings.Builder, depth int) {
-	for range rapid.IntRange(1, 16).Draw(t, "nTerms") {
+	maxTerms := 16 - ((patternDepth - depth) * 4)
+	for range rapid.IntRange(1, maxTerms).Draw(t, "nTerms") {
 		genTerm(t, sb, depth)
 	}
 }

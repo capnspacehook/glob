@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	sutil "github.com/gobwas/glob/util/strings"
+	sutil "github.com/capnspacehook/glob/util/strings"
 )
 
 // SuffixAny any matches a string with a given suffix that isn't followed

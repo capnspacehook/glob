@@ -6,7 +6,7 @@ import (
 	"slices"
 	"unicode/utf8"
 
-	"github.com/gobwas/glob/util/runes"
+	"github.com/capnspacehook/glob/util/runes"
 )
 
 const (

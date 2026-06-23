@@ -9,7 +9,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/gobwas/glob"
+	"github.com/capnspacehook/glob"
 )
 
 func benchString(r testing.BenchmarkResult) string {

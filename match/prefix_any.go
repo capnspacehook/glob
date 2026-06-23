@@ -5,7 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	sutil "github.com/gobwas/glob/util/strings"
+	sutil "github.com/capnspacehook/glob/util/strings"
 )
 
 // PrefixAny matches a string with a given prefix that isn't followed

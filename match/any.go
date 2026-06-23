@@ -3,7 +3,7 @@ package match
 import (
 	"fmt"
 
-	"github.com/gobwas/glob/util/strings"
+	"github.com/capnspacehook/glob/util/strings"
 )
 
 // Any matches any sequence of non-separator characters; '*'.

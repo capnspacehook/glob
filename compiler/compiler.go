@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/gobwas/glob/match"
-	"github.com/gobwas/glob/syntax/ast"
-	"github.com/gobwas/glob/util/runes"
+	"github.com/capnspacehook/glob/match"
+	"github.com/capnspacehook/glob/syntax/ast"
+	"github.com/capnspacehook/glob/util/runes"
 )
 
 func optimizeMatcher(matcher match.Matcher) match.Matcher {
