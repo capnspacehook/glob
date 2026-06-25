@@ -104,9 +104,10 @@ func (c CharClass) Match(s string) bool {
 
 func (c CharClass) Index(s string) (int, []int) {
 	for i, r := range s {
-		// character classes must never match separators
+		// character classes must never match separators; skip and keep
+		// searching
 		if slices.Contains(c.Seperators, r) {
-			return -1, nil
+			continue
 		}
 
 		if c.matches(r) != c.Not {

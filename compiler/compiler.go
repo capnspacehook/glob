@@ -185,7 +185,7 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 		hasSuper  bool
 		hasSingle bool
 		min       int
-		separator []rune
+		rejects   []rune
 	)
 
 	for i, matcher := range matchers {
@@ -210,7 +210,12 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 				return nil
 			}
 
-			sep = m.List
+			// negated classes must not match runes in the character
+			// list and separators
+			sep = append(slices.Clone(m.List), m.Seperators...)
+			slices.Sort(sep)
+			sep = slices.Compact(sep)
+
 			hasSingle = true
 			min++
 
@@ -220,10 +225,10 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 
 		// initialize
 		if i == 0 {
-			separator = sep
+			rejects = sep
 		}
 
-		if runes.Equal(sep, separator) {
+		if runes.Equal(sep, rejects) {
 			continue
 		}
 
@@ -235,10 +240,10 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 	}
 
 	if hasAny && !hasSuper && !hasSingle {
-		return match.NewAny(separator)
+		return match.NewAny(rejects)
 	}
 
-	if (hasAny || hasSuper) && min > 0 && len(separator) == 0 {
+	if (hasAny || hasSuper) && min > 0 && len(rejects) == 0 {
 		return match.NewMin(min)
 	}
 
@@ -252,8 +257,9 @@ func glueMatchersAsEvery(matchers []match.Matcher) match.Matcher {
 		}
 	}
 
-	if len(separator) > 0 {
-		every.Add(match.NewContains(string(separator), true))
+	// the returned matcher must not match any of the rejected runes
+	for _, r := range rejects {
+		every.Add(match.NewContains(string(r), true))
 	}
 
 	return every
