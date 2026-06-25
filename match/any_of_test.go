@@ -33,8 +33,8 @@ func TestAnyOfIndex(t *testing.T) {
 		},
 		{
 			Matchers{
-				NewCharClass(false, []rune("[def]"), nil),
-				NewCharClass(false, []rune("[abc]"), nil),
+				NewCharClass(false, []rune("[def]"), nil, nil),
+				NewCharClass(false, []rune("[abc]"), nil, nil),
 			},
 			"abcdef",
 			0,

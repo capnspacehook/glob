@@ -18,6 +18,7 @@ func FuzzCharClass(f *testing.F) {
 func testCharClass(t *rapid.T) {
 	not := rapid.Bool().Draw(t, "not")
 	list := rapid.StringN(1, 16, -1).Draw(t, "list")
+	seps := rapid.StringN(1, 3, -1).Draw(t, "seps")
 
 	var ranges []CharRange
 	numRanges := rapid.IntRange(0, 8).Draw(t, "numRanges")
@@ -35,7 +36,7 @@ func testCharClass(t *rapid.T) {
 
 	input := string(rapid.Rune().Draw(t, "input"))
 
-	cc := NewCharClass(not, []rune(list), ranges)
+	cc := NewCharClass(not, []rune(list), ranges, []rune(seps))
 	if len(cc.List) > len(list) {
 		t.Errorf("optimized list grew; from %d to %d", len(list), len(cc.List))
 	}
@@ -45,6 +46,7 @@ func testCharClass(t *rapid.T) {
 
 	matched := cc.Match(input)
 
+	containsSep := strings.ContainsAny(input, seps)
 	contains := strings.ContainsAny(input, list)
 	var inRange bool
 	for _, r := range input {
@@ -57,7 +59,7 @@ func testCharClass(t *rapid.T) {
 	}
 
 	inClass := contains || inRange
-	shouldMatch := inClass != not
+	shouldMatch := !containsSep && (inClass != not)
 	if matched != shouldMatch {
 		t.Logf("input=%s charClass=%s", input, cc)
 		t.Fatalf("expected match=%t, got %t", shouldMatch, matched)

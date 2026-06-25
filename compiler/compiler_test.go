@@ -181,7 +181,7 @@ func TestGlueMatchers(t *testing.T) {
 		},
 		{
 			[]match.Matcher{
-				match.NewCharClass(true, []rune{'a'}, nil),
+				match.NewCharClass(true, []rune{'a'}, nil, []rune{'a'}),
 				match.NewAny([]rune{'a'}),
 			},
 			match.EveryOf{Matchers: match.Matchers{
@@ -238,16 +238,16 @@ func TestCompileMatchers(t *testing.T) {
 		},
 		{
 			[]match.Matcher{
-				match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}),
-				match.NewCharClass(false, []rune{'z', 't', 'e'}, nil),
+				match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}, nil),
+				match.NewCharClass(false, []rune{'z', 't', 'e'}, nil, nil),
 				match.NewText("c"),
 				match.NewSingle(nil),
 			},
 			match.NewRow(
 				4,
 				match.Matchers{
-					match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}),
-					match.NewCharClass(false, []rune{'z', 't', 'e'}, nil),
+					match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}, nil),
+					match.NewCharClass(false, []rune{'z', 't', 'e'}, nil, nil),
 					match.NewText("c"),
 					match.NewSingle(nil),
 				}...,
@@ -273,8 +273,8 @@ func TestConvertMatchers(t *testing.T) {
 	}{
 		{
 			[]match.Matcher{
-				match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}),
-				match.NewCharClass(false, []rune{'z', 't', 'e'}, nil),
+				match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}, nil),
+				match.NewCharClass(false, []rune{'z', 't', 'e'}, nil, nil),
 				match.NewText("c"),
 				match.NewSingle(nil),
 				match.NewAny(nil),
@@ -283,8 +283,8 @@ func TestConvertMatchers(t *testing.T) {
 				match.NewRow(
 					4,
 					[]match.Matcher{
-						match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}),
-						match.NewCharClass(false, []rune{'z', 't', 'e'}, nil),
+						match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}, nil),
+						match.NewCharClass(false, []rune{'z', 't', 'e'}, nil, nil),
 						match.NewText("c"),
 						match.NewSingle(nil),
 					}...,
@@ -294,8 +294,8 @@ func TestConvertMatchers(t *testing.T) {
 		},
 		{
 			[]match.Matcher{
-				match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}),
-				match.NewCharClass(false, []rune{'z', 't', 'e'}, nil),
+				match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}, nil),
+				match.NewCharClass(false, []rune{'z', 't', 'e'}, nil, nil),
 				match.NewText("c"),
 				match.NewSingle(nil),
 				match.NewAny(nil),
@@ -307,8 +307,8 @@ func TestConvertMatchers(t *testing.T) {
 				match.NewRow(
 					3,
 					match.Matchers{
-						match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}),
-						match.NewCharClass(false, []rune{'z', 't', 'e'}, nil),
+						match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'c'}}, nil),
+						match.NewCharClass(false, []rune{'z', 't', 'e'}, nil, nil),
 						match.NewText("c"),
 					}...,
 				),
@@ -380,7 +380,7 @@ func TestCompiler(t *testing.T) {
 					),
 				),
 			),
-			result: match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'z'}}),
+			result: match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'z'}}, nil),
 		},
 		{
 			ast: ast.NewNode(
@@ -395,7 +395,7 @@ func TestCompiler(t *testing.T) {
 					),
 				),
 			),
-			result: match.NewCharClass(true, []rune("abc"), []match.CharRange{}),
+			result: match.NewCharClass(true, []rune("abc"), []match.CharRange{}, nil),
 		},
 		{
 			ast: ast.NewNode(
@@ -414,7 +414,7 @@ func TestCompiler(t *testing.T) {
 					),
 				),
 			),
-			result: match.NewCharClass(true, []rune("abc"), []match.CharRange{{Low: 'a', High: 'z'}}),
+			result: match.NewCharClass(true, []rune("abc"), []match.CharRange{{Low: 'a', High: 'z'}}, nil),
 		},
 		{
 			ast: ast.NewNode(
@@ -636,7 +636,7 @@ func TestCompiler(t *testing.T) {
 				nil,
 				match.AnyOf{Matchers: match.Matchers{
 					match.NewSingle(nil),
-					match.NewCharClass(false, []rune("def"), []match.CharRange{}),
+					match.NewCharClass(false, []rune("def"), []match.CharRange{}, nil),
 					match.NewNothing(),
 				}},
 			),
@@ -666,8 +666,8 @@ func TestCompiler(t *testing.T) {
 				match.NewRow(
 					2,
 					match.Matchers{
-						match.NewCharClass(false, nil, []match.CharRange{{Low: 'a', High: 'z'}}),
-						match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'x'}}),
+						match.NewCharClass(false, nil, []match.CharRange{{Low: 'a', High: 'z'}}, nil),
+						match.NewCharClass(true, nil, []match.CharRange{{Low: 'a', High: 'x'}}, nil),
 					}...,
 				),
 				nil,
@@ -712,8 +712,8 @@ func TestCompiler(t *testing.T) {
 				match.Matchers{
 					match.NewText("abc"),
 					match.AnyOf{Matchers: match.Matchers{
-						match.NewCharClass(false, []rune("abc"), []match.CharRange{}),
-						match.NewCharClass(false, []rune("def"), []match.CharRange{}),
+						match.NewCharClass(false, []rune("abc"), []match.CharRange{}, nil),
+						match.NewCharClass(false, []rune("def"), []match.CharRange{}, nil),
 					}},
 					match.NewText("ghi"),
 				}...,

@@ -10,6 +10,8 @@ type CharClass struct {
 	Not    bool
 	List   []rune
 	Ranges []CharRange
+
+	Seperators []rune
 }
 
 type CharRange struct {
@@ -17,7 +19,7 @@ type CharRange struct {
 	High rune
 }
 
-func NewCharClass(not bool, list []rune, ranges []CharRange) CharClass {
+func NewCharClass(not bool, list []rune, ranges []CharRange, seps []rune) CharClass {
 	slices.Sort(list)
 	deduped := slices.Compact(list)
 
@@ -68,7 +70,12 @@ func NewCharClass(not bool, list []rune, ranges []CharRange) CharClass {
 	}
 	uniqueChars = slices.Clip(uniqueChars)
 
-	return CharClass{not, uniqueChars, expandedRanges}
+	return CharClass{
+		Not:        not,
+		List:       uniqueChars,
+		Ranges:     expandedRanges,
+		Seperators: seps,
+	}
 }
 
 func containsRange(ranges []CharRange, r CharRange) bool {
@@ -87,11 +94,21 @@ func (c CharClass) Match(s string) bool {
 		return false
 	}
 
+	// character classes must never match separators
+	if slices.Contains(c.Seperators, r) {
+		return false
+	}
+
 	return c.matches(r) != c.Not
 }
 
 func (c CharClass) Index(s string) (int, []int) {
 	for i, r := range s {
+		// character classes must never match separators
+		if slices.Contains(c.Seperators, r) {
+			return -1, nil
+		}
+
 		if c.matches(r) != c.Not {
 			// use the actual byte width consumed rather than
 			// utf8.RuneLen(r): for invalid UTF-8 bytes range yields

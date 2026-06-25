@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 
 	"github.com/capnspacehook/glob/match"
 	"github.com/capnspacehook/glob/syntax/ast"
@@ -499,7 +500,7 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 		m = match.NewNothing()
 
 	case ast.KindCharClass:
-		m, err = compileCharClass(tree)
+		m, err = compileCharClass(tree, sep)
 		if err != nil {
 			return nil, err
 		}
@@ -515,7 +516,7 @@ func compile(tree *ast.Node, sep []rune) (m match.Matcher, err error) {
 	return optimizeMatcher(m), nil
 }
 
-func compileCharClass(node *ast.Node) (match.Matcher, error) {
+func compileCharClass(node *ast.Node, sep []rune) (match.Matcher, error) {
 	c := node.Value.(ast.CharClass)
 	if len(node.Children) == 0 {
 		return nil, errors.New("empty character class")
@@ -526,6 +527,12 @@ func compileCharClass(node *ast.Node) (match.Matcher, error) {
 	firstChildList := node.Children[0].Kind == ast.KindList
 	if firstChildList {
 		charList = []rune(node.Children[0].Value.(ast.List).Chars)
+		for _, r := range charList {
+			if slices.Contains(sep, r) {
+				return nil, fmt.Errorf("character class explicitly contains separator %c", r)
+			}
+		}
+
 		childNodes = childNodes[1:]
 	}
 
@@ -542,7 +549,7 @@ func compileCharClass(node *ast.Node) (match.Matcher, error) {
 		})
 	}
 
-	return match.NewCharClass(c.Not, charList, ranges), nil
+	return match.NewCharClass(c.Not, charList, ranges, sep), nil
 }
 
 func Compile(tree *ast.Node, sep []rune) (match.Matcher, error) {

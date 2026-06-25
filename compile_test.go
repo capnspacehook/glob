@@ -88,7 +88,7 @@ func step(node *ast.Node, s string, seps []rune, starts map[int]bool) map[int]bo
 		return out
 
 	case ast.KindCharClass:
-		pred := charClassPred(node)
+		pred := charClassPred(node, seps)
 		out := map[int]bool{}
 		for p := range starts {
 			if p < len(s) {
@@ -135,7 +135,7 @@ func step(node *ast.Node, s string, seps []rune, starts map[int]bool) map[int]bo
 
 // charClassPred builds the membership predicate for a KindCharClass node from
 // its KindList and KindRange children, honoring negation.
-func charClassPred(node *ast.Node) func(rune) bool {
+func charClassPred(node *ast.Node, seps []rune) func(rune) bool {
 	not := node.Value.(ast.CharClass).Not
 	var list []rune
 	var ranges []ast.Range
@@ -148,6 +148,10 @@ func charClassPred(node *ast.Node) func(rune) bool {
 		}
 	}
 	return func(r rune) bool {
+		if slices.Contains(seps, r) {
+			return false
+		}
+
 		in := slices.Contains(list, r)
 		for _, rg := range ranges {
 			in = in || (r >= rg.Low && r <= rg.High)
@@ -265,7 +269,7 @@ func writeClassMember(t *rapid.T, sb *strings.Builder) {
 		return
 	}
 
-	sb.WriteRune(rapid.SampledFrom(classMemberRunes).Draw(t, "member"))
+	sb.WriteRune(rapid.SampledFrom(classMembers).Draw(t, "member"))
 }
 
 // invalidBytes are lone bytes that never form valid UTF-8 on their own.
