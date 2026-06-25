@@ -164,6 +164,11 @@ func (l *lexer) readItem() {
 	r := l.read()
 	switch {
 	case r == eof:
+		if l.termsLevel > 0 {
+			l.error("expected brace close")
+			return
+		}
+
 		l.tokens.push(Token{EOF, ""})
 	case r == charTermsOpen:
 		l.termsEnter()
