@@ -120,6 +120,8 @@ func parserRange(tree *Node, lex Lexer) (parseFn, *Node, error) {
 			}
 			curRange.Low = r
 
+		case lexer.RangeBetween:
+
 		case lexer.RangeHigh:
 			r, w := utf8.DecodeRuneInString(token.Raw)
 			if len(token.Raw) > w {

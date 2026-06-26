@@ -275,6 +275,7 @@ func (l *lexer) readCharClass() {
 				}
 
 				l.tokens.push(Token{RangeLow, string(r)})
+				l.tokens.push(Token{RangeBetween, "-"})
 				l.tokens.push(Token{RangeHigh, string(hi)})
 				continue
 			}
